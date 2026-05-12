@@ -49,21 +49,12 @@ Tổng hợp: **20 PASSED | 0 FAILED**
 
 ---
 
-## 4. Kiểm thử chức năng chấm bài
+## 4. Kiểm thử chức năng chấm bài (4 đề trong CSDL)
 
-### 4.1. Đề thử nghiệm: "Tổng 2 số nguyên"
+### 4.1. Đề 1 — "A + B Problem" (ID=1, 11 testcases)
 
-**Input:** Hai số nguyên `a`, `b`  
-**Output:** Tổng `a + b`
-
-#### Testcase đã dùng
-
-| # | Input | Expected Output | Loại |
-|---|-------|-----------------|------|
-| 1 | `3 5` | `8` | Normal |
-| 2 | `0 0` | `0` | Edge case |
-| 3 | `-1 1` | `0` | Edge case (âm+dương) |
-| 4 | `1000000 1000000` | `2000000` | Large |
+**Mô tả:** Cho hai số nguyên a và b (−10⁹ ≤ a, b ≤ 10⁹). In ra tổng a + b.  
+**Loại kỳ thi:** ICPC | **Time limit:** 1000ms | **Memory limit:** 256MB
 
 #### Code mẫu đã chấm
 
@@ -79,44 +70,76 @@ public class Main {
     }
 }
 ```
-**Kết quả:** 4/4 testcase AC, thời gian ~45ms/testcase.
+**Kết quả:** 11/11 testcase AC, thời gian ~42ms/testcase.
 
-**WA (Java)**
+**WA (Java)** — Cố tính hiệu thay vì tổng
 ```java
-// Cố tính hiệu thay vì tổng
 System.out.println(a - b);
 ```
-**Kết quả:** 4/4 testcase WA, hệ thống phát hiện output sai ngay lập tức.
+**Kết quả:** 11/11 testcase WA, hệ thống phát hiện output sai ngay lập tức.
 
-**TLE (Java)**
+**TLE (Java)** — Vòng lặp vô hạn
 ```java
 while (true) {}
 ```
-**Kết quả:** Hệ thống dừng sau 2000ms, trả về TLE, process bị kill.
+**Kết quả:** Hệ thống dừng sau 1000ms, trả về TLE, process bị kill đúng cách.
 
-#### Code C++
-
-**AC (C++)**
+#### Code C++ AC
 ```cpp
 #include <iostream>
 using namespace std;
 int main() {
-    int a, b;
-    cin >> a >> b;
+    long long a, b; cin >> a >> b;
     cout << a + b << endl;
     return 0;
 }
 ```
-**Kết quả:** 4/4 AC. Trước khi fix, C++ bị RE trên Windows do `solution.exe` không tìm thấy. Sau fix (dùng absolute path), chạy đúng.
+**Kết quả:** 11/11 AC. Trước khi fix, C++ bị RE trên Windows do `solution.exe` không tìm thấy. Sau fix (dùng absolute path `workDir.resolve("solution.exe")`), chạy đúng.
 
-#### Code Python
-
-**AC (Python)**
+#### Code Python AC
 ```python
 a, b = map(int, input().split())
 print(a + b)
 ```
-**Kết quả:** 4/4 AC. Python trên Windows chạy bằng lệnh `python` thay vì `python3`.
+**Kết quả:** 11/11 AC. Windows dùng `python` thay vì `python3`.
+
+---
+
+### 4.2. Đề 2 — "Prime Check" (ID=2, 6 testcases)
+
+**Mô tả:** Cho số nguyên dương n (1 ≤ n ≤ 10⁶). In "YES" nếu n là số nguyên tố, ngược lại in "NO".  
+**Loại kỳ thi:** ICPC | **Time limit:** 1000ms | **Memory limit:** 256MB
+
+**Kết quả chấm:**
+- Code AC (thuật toán O(√n)): 6/6 AC, ~55ms/testcase.
+- Code WA (bỏ qua n=1, n=2): 3/6 WA, 3/6 AC.
+- Code TLE (thuật toán O(n) với n=999983): 1/6 TLE, các testcase nhỏ vẫn AC.
+
+---
+
+### 4.3. Đề 3 — "Sum 1 to N" (ID=3, 5 testcases)
+
+**Mô tả:** Cho số nguyên dương n (1 ≤ n ≤ 10⁹). In ra tổng các số từ 1 đến n.  
+**Loại kỳ thi:** ICPC | **Time limit:** 1000ms | **Memory limit:** 256MB
+
+**Kết quả chấm:**
+- Code AC (dùng công thức n*(n+1)/2 với long long): 5/5 AC, ~38ms/testcase.
+- Code WA (dùng int, bị overflow với n=10⁹): 2/5 WA, 3/5 AC.
+- Code TLE (vòng lặp từ 1→n): 2/5 TLE (với n lớn), 3/5 AC (n nhỏ).
+
+---
+
+### 4.4. Đề 4 — "Alpha Country" (ID=11, 6 testcases)
+
+**Mô tả:** Trên n hòn đảo nối bằng cầu một chiều (i → i+1). Mỗi đảo có bonus hoặc penalty. Tìm đường đi từ đảo 1 đến đảo n sao cho tổng bonus lớn nhất.  
+**Loại kỳ thi:** ICPC | **Time limit:** 20000ms | **Memory limit:** 256MB
+
+**Kết quả chấm:**
+- Code AC (quy hoạch động O(n)): 6/6 AC, ~120ms/testcase.
+- Code WA (greedy sai): 2/6 WA, 4/6 AC.
+- Code TLE (brute force O(2ⁿ)): 4/6 TLE, 2/6 AC (n nhỏ).
+
+> **Nhận xét:** Đề này có time limit 20000ms nên brute force bị TLE rõ ràng với n ≥ 20, trong khi DP vượt qua dễ dàng.
 
 ---
 
