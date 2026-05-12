@@ -118,6 +118,17 @@ BT_Java-master/
 
 ---
 
+## Phân công nhiệm vụ
+
+| Thành viên | Vai trò | Module chính |
+|---|---|---|
+| Vũ | Core Backend & Database | ERD, Schema, DAO, FileManager, Main entry |
+| Hoàng | AI Integration | Gemini API, Prompt Engineering, JSON Parser |
+| Mạnh | Judge Engine & QA | Multi-language Runner, Timeout, Comparator, Docs |
+| Minh | UI/UX | Java Swing Dashboard, Problem Entry, AI Panel, Result Viewer |
+
+---
+
 ## Tài liệu tham khảo
 
 - [INSTALL.md](INSTALL.md) — Hướng dẫn cài đặt chi tiết
