@@ -20,6 +20,7 @@ import java.util.Properties;
 public class GeminiAIService implements AIService {
     private static final String API_URL_TEMPLATE;
     private static final String API_KEY;
+    private static final String API_FORMAT; // "gemini" or "openai"
     private static final OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
             .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
@@ -31,17 +32,20 @@ public class GeminiAIService implements AIService {
         Properties props = new Properties();
         String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
         String key = "";
+        String format = "gemini";
         try (var input = GeminiAIService.class.getClassLoader().getResourceAsStream("config.properties")) {
             if (input != null) {
                 props.load(input);
                 url = props.getProperty("ai.api.url", url);
                 key = props.getProperty("ai.api.key", "");
+                format = props.getProperty("ai.format", "gemini");
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
         API_URL_TEMPLATE = url;
         API_KEY = key;
+        API_FORMAT = format;
     }
 
     @Override
@@ -123,51 +127,66 @@ public class GeminiAIService implements AIService {
     }
 
     private String callGeminiAPI(String textPrompt, String imagePath) throws IOException {
-        String apiUrl = API_URL_TEMPLATE + API_KEY;
+        boolean isOpenAI = "openai".equalsIgnoreCase(API_FORMAT);
+        String apiUrl = isOpenAI ? API_URL_TEMPLATE : API_URL_TEMPLATE + API_KEY;
 
         JsonObject requestBody = new JsonObject();
-        JsonArray contents = new JsonArray();
-        JsonObject content = new JsonObject();
-        JsonArray parts = new JsonArray();
 
-        // Text part
-        JsonObject textPart = new JsonObject();
-        textPart.addProperty("text", textPrompt);
-        parts.add(textPart);
+        if (isOpenAI) {
+            // OpenAI-compatible format (NVIDIA NIM, MiniMax, OpenAI, etc.)
+            JsonArray messages = new JsonArray();
+            JsonObject message = new JsonObject();
+            message.addProperty("role", "user");
+            message.addProperty("content", textPrompt);
+            messages.add(message);
+            requestBody.add("messages", messages);
+            requestBody.addProperty("model", System.getProperty("ai.model", "gpt-4o-mini"));
+            requestBody.addProperty("temperature", 0.2);
+            requestBody.addProperty("max_tokens", 32768);
+        } else {
+            // Google Gemini format
+            JsonArray contents = new JsonArray();
+            JsonObject content = new JsonObject();
+            JsonArray parts = new JsonArray();
 
-        // Image part (if available)
-        if (imagePath != null && !imagePath.isBlank() && Files.exists(Paths.get(imagePath))) {
-            byte[] imageBytes = Files.readAllBytes(Paths.get(imagePath));
-            String base64Image = Base64.getEncoder().encodeToString(imageBytes);
-            JsonObject inlineData = new JsonObject();
-            inlineData.addProperty("mimeType", "image/png");
-            inlineData.addProperty("data", base64Image);
-            JsonObject imagePart = new JsonObject();
-            imagePart.add("inlineData", inlineData);
-            parts.add(imagePart);
+            JsonObject textPart = new JsonObject();
+            textPart.addProperty("text", textPrompt);
+            parts.add(textPart);
+
+            if (imagePath != null && !imagePath.isBlank() && Files.exists(Paths.get(imagePath))) {
+                byte[] imageBytes = Files.readAllBytes(Paths.get(imagePath));
+                String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+                JsonObject inlineData = new JsonObject();
+                inlineData.addProperty("mimeType", "image/png");
+                inlineData.addProperty("data", base64Image);
+                JsonObject imagePart = new JsonObject();
+                imagePart.add("inlineData", inlineData);
+                parts.add(imagePart);
+            }
+
+            content.add("parts", parts);
+            contents.add(content);
+            requestBody.add("contents", contents);
+
+            JsonObject generationConfig = new JsonObject();
+            generationConfig.addProperty("temperature", 0.2);
+            generationConfig.addProperty("maxOutputTokens", 32768);
+            requestBody.add("generationConfig", generationConfig);
         }
-
-        content.add("parts", parts);
-        contents.add(content);
-        requestBody.add("contents", contents);
-
-        // Request JSON config
-        JsonObject generationConfig = new JsonObject();
-        generationConfig.addProperty("temperature", 0.2);
-        generationConfig.addProperty("maxOutputTokens", 32768);
-        requestBody.add("generationConfig", generationConfig);
 
         RequestBody body = RequestBody.create(
                 requestBody.toString(),
                 MediaType.parse("application/json")
         );
 
-        Request request = new Request.Builder()
+        Request.Builder reqBuilder = new Request.Builder()
                 .url(apiUrl)
-                .post(body)
-                .build();
+                .post(body);
+        if (isOpenAI) {
+            reqBuilder.header("Authorization", "Bearer " + API_KEY);
+        }
 
-        try (Response response = client.newCall(request).execute()) {
+        try (Response response = client.newCall(reqBuilder.build()).execute()) {
             if (!response.isSuccessful()) {
                 throw new IOException("Unexpected response " + response.code() + ": " + response.body().string());
             }
@@ -177,21 +196,34 @@ public class GeminiAIService implements AIService {
 
     private String extractTextFromResponse(String jsonResponse) {
         JsonObject root = gson.fromJson(jsonResponse, JsonObject.class);
-        JsonArray candidates = root.getAsJsonArray("candidates");
-        if (candidates == null || candidates.isEmpty()) return "";
-        JsonObject candidate = candidates.get(0).getAsJsonObject();
-        JsonObject content = candidate.getAsJsonObject("content");
-        if (content == null) return "";
-        JsonArray parts = content.getAsJsonArray("parts");
-        if (parts == null) return "";
-        StringBuilder sb = new StringBuilder();
-        for (JsonElement part : parts) {
-            JsonObject p = part.getAsJsonObject();
-            if (p.has("text")) {
-                sb.append(p.get("text").getAsString());
+        boolean isOpenAI = "openai".equalsIgnoreCase(API_FORMAT);
+
+        if (isOpenAI) {
+            // OpenAI format: choices[0].message.content
+            JsonArray choices = root.getAsJsonArray("choices");
+            if (choices == null || choices.isEmpty()) return "";
+            JsonObject choice = choices.get(0).getAsJsonObject();
+            JsonObject message = choice.getAsJsonObject("message");
+            if (message == null || !message.has("content")) return "";
+            return message.get("content").getAsString();
+        } else {
+            // Gemini format: candidates[0].content.parts[0].text
+            JsonArray candidates = root.getAsJsonArray("candidates");
+            if (candidates == null || candidates.isEmpty()) return "";
+            JsonObject candidate = candidates.get(0).getAsJsonObject();
+            JsonObject content = candidate.getAsJsonObject("content");
+            if (content == null) return "";
+            JsonArray parts = content.getAsJsonArray("parts");
+            if (parts == null) return "";
+            StringBuilder sb = new StringBuilder();
+            for (JsonElement part : parts) {
+                JsonObject p = part.getAsJsonObject();
+                if (p.has("text")) {
+                    sb.append(p.get("text").getAsString());
+                }
             }
+            return sb.toString();
         }
-        return sb.toString();
     }
 
     private AIResponse parseAnalyzeResponse(String jsonResponse) {
