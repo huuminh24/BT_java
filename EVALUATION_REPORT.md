@@ -1,178 +1,74 @@
-# Báo cáo đánh giá & Kiểm thử — AI-Powered CP Judge System
+Báo cáo đánh giá & Kiểm thử
 
-**Ngày thực hiện:** 12/05/2026  
-**Phiên bản:** 1.0-SNAPSHOT  
-**Người thực hiện:** [Tên sinh viên]  
-**Môn học:** Lập trình Java — Bài tập lớn
+1. Giới thiệu
 
----
+Đây là báo cáo kết quả thử nghiệm chương trình AI-Powered CP Judge System — một ứng dụng Java Swing giúp nhập đề thi lập trình, dùng AI phân tích đề và tự sinh testcase, sau đó chấm thử code mẫu.
 
-## 1. Mục tiêu kiểm thử
+Em đã test thử trên 2 đề trong CSDL và chạy bộ test tự động `SystemTest.java` để kiểm tra các chức năng cơ bản.
 
-- Kiểm tra kết nối cơ sở dữ liệu MySQL.
-- Kiểm tra CRUD cho Problem, Testcase, SampleCode.
-- Kiểm tra Judge Engine với các trường hợp: AC, WA, TLE.
-- Kiểm tra chấm bài qua UI (Code Submit Panel).
-- Đánh giá hiệu năng và khả năng phục hồi lỗi.
+2. Môi trường chạy
 
----
+Em chạy trên laptop cá nhân:
+- Windows 11
+- Java 21 (Eclipse Temurin)
+- Maven 3.9
+- MySQL 8.0 qua Docker Desktop
+- MinGW-w64 (g++) để compile C++
+- Python 3.12
 
-## 2. Môi trường kiểm thử
 
-| Thành phần | Phiên bản |
-|------------|-----------|
-| Hệ điều hành | Windows 11 |
-| JDK | Eclipse Temurin 21.0.6 |
-| Maven | 3.9.6 |
-| MySQL | 8.0 (Docker) |
-| g++ (MinGW-w64) | 13.2.0 |
-| Python | 3.12 |
-| UI Theme | FlatLaf Dark |
+3. Kết quả test tự động (SystemTest)
 
----
+Chạy class `SystemTest.java`, kết quả như sau:
 
-## 3. Kết quả System Test (`com.java.SystemTest`)
+=== AI-Powered CP Judge System - System Test ===
+>> TEST 1: Database Connection
+  [PASS] MySQL connected
+>> TEST 2: Problem CRUD
+  [PASS] Create Problem (id=...)
+  [PASS] Read Problem by ID
+  ...
+RESULT: 20 PASSED | 0 FAILED
+<img width="635" height="427" alt="Ảnh chụp màn hình 2026-05-12 093234" src="https://github.com/user-attachments/assets/4c99f024-c6a2-4f97-b7b3-66c3652a08e3" />
 
-Tổng hợp: **20 PASSED | 0 FAILED**
+4. Thử nghiệm trên các đề thực tế
 
-| # | Test Case | Mô tả | Kết quả |
-|---|-----------|-------|---------|
-| 1 | Database Connection | Kết nối MySQL với UTF-8 params | ✅ PASS |
-| 2 | Problem CRUD | Create → Read → Update → Delete | ✅ PASS |
-| 3 | Testcase CRUD | Thêm testcase, đọc theo problem | ✅ PASS |
-| 4 | SampleCode CRUD | Thêm code mẫu, đọc theo problem | ✅ PASS |
-| 5 | FileManager | Tạo thư mục, ghi/đọc file | ✅ PASS |
-| 6 | JudgeEngine — AC | Code tính tổng 2 số (3+5=8) | ✅ PASS |
-| 7 | JudgeEngine — WA | Code tính hiệu (3-5≠8) | ✅ PASS |
-| 8 | JudgeEngine — TLE | Vòng lặp vô hạn | ✅ PASS |
-| 9 | Full Submission Flow | Tạo đề → testcase → code → chấm → lưu DB | ✅ PASS |
+Em có tổng cộng 2 đề trong CSDL. Dưới đây là kết quả chấm thử từng đề.
 
----
+4.1. Đề "Alpha Country" 
 
-## 4. Kiểm thử chức năng chấm bài
+- Code đúng  <img width="1733" height="1117" alt="image" src="https://github.com/user-attachments/assets/494792db-379d-46ff-96fa-eeb4c0f5cabd" />
+- Code sai <img width="1733" height="1117" alt="image" src="https://github.com/user-attachments/assets/cba3ab7a-0441-4155-af80-7442c22a4197" />
 
-### 4.1. Đề thử nghiệm: "Tổng 2 số nguyên"
+4.2. Đề "Greatest Common Divisor" 
+- Code đúng :<img width="1733" height="1117" alt="image" src="https://github.com/user-attachments/assets/32c60281-0835-43c0-8681-b475e616d1d5" />
 
-**Input:** Hai số nguyên `a`, `b`  
-**Output:** Tổng `a + b`
+-Code WA : <img width="1733" height="1117" alt="image" src="https://github.com/user-attachments/assets/675854fa-92b5-4393-89ee-5b7bd3811b5a" />
 
-#### Testcase đã dùng
+-Code TLE : <img width="1733" height="1117" alt="image" src="https://github.com/user-attachments/assets/e9360103-354c-4168-94e0-a0e0f64f6ff0" />
 
-| # | Input | Expected Output | Loại |
-|---|-------|-----------------|------|
-| 1 | `3 5` | `8` | Normal |
-| 2 | `0 0` | `0` | Edge case |
-| 3 | `-1 1` | `0` | Edge case (âm+dương) |
-| 4 | `1000000 1000000` | `2000000` | Large |
+5. Thử nghiệm AI phân tích đề
 
-#### Code mẫu đã chấm
+Em thử dùng AI phân tích 2 đề: "Alpha country" và "Greatest Common Divisor".
 
-**AC (Java)**
-```java
-import java.util.Scanner;
-public class Main {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        int a = sc.nextInt();
-        int b = sc.nextInt();
-        System.out.println(a + b);
-    }
-}
-```
-**Kết quả:** 4/4 testcase AC, thời gian ~45ms/testcase.
+Kết quả:
+- AI đọc hiểu đề và trả về mô tả ngắn gọn đúng nghĩa.
+- Sinh được 5 testcase gồm small, normal , edge.
+- Có thể tick chọn "Tự động sinh code AC" thì AI viết code Java mẫu.
+- Có thể hủy tác vụ AI bằng cách nhấn lại nút, không bị treo UI.
 
-**WA (Java)**
-```java
-// Cố tính hiệu thay vì tổng
-System.out.println(a - b);
-```
-**Kết quả:** 4/4 testcase WA, hệ thống phát hiện output sai ngay lập tức.
+<img width="1733" height="1117" alt="image" src="https://github.com/user-attachments/assets/a481f0fc-685d-4b2e-8bb2-4eb365845416" />
 
-**TLE (Java)**
-```java
-while (true) {}
-```
-**Kết quả:** Hệ thống dừng sau 2000ms, trả về TLE, process bị kill.
+6. Kết luận
 
-#### Code C++
+Sau quá trình thử nghiệm, chương trình chạy ổn định với các chức năng chính:
+- Nhập đề và lưu vào CSDL: hoạt động tốt.
+- AI phân tích đề và sinh testcase: hoạt động chưa được tốt lắm , test case do AI sinh ra dễ bị sai  , cần chỉnh prompt với đề phức tạp.
+- Chấm thử Java/C++/Python: chạy đúng, phát hiện AC/WA/TLE chính xác.
+- UI hiển thị rõ ràng, có màu phân biệt status.
 
-**AC (C++)**
-```cpp
-#include <iostream>
-using namespace std;
-int main() {
-    int a, b;
-    cin >> a >> b;
-    cout << a + b << endl;
-    return 0;
-}
-```
-**Kết quả:** 4/4 AC. Trước khi fix, C++ bị RE trên Windows do `solution.exe` không tìm thấy. Sau fix (dùng absolute path), chạy đúng.
+SystemTest đạt 20/20 passed. Em đánh giá chương trình đã đáp ứng được yêu cầu đề bài.
+ Màn hình Dashboard hiển thị tổng quan (3 đề, các testcase, submission)
 
-#### Code Python
+<img width="1733" height="1117" alt="image" src="https://github.com/user-attachments/assets/1096621a-ae06-4e40-b4cc-3986021e6c04" />
 
-**AC (Python)**
-```python
-a, b = map(int, input().split())
-print(a + b)
-```
-**Kết quả:** 4/4 AC. Python trên Windows chạy bằng lệnh `python` thay vì `python3`.
-
----
-
-## 5. Kiểm thử AI Phân tích đề
-
-| Tính năng | Kết quả |
-|-----------|---------|
-| Phân tích đề bằng text | ✅ Hoạt động, trả về mô tả + testcase |
-| Sinh code AC tự động | ✅ Lưu được vào SampleCode với `is_ai_generated=true` |
-| Sinh checker script | ✅ Lưu Python checker vào problem |
-| Hủy tác vụ AI (Cancel) | ✅ Nhấn lại nút để cancel SwingWorker, UI không treo |
-| Timeout API | ✅ OkHttpClient có timeout 30s, tránh treo vĩnh viễn |
-
----
-
-## 6. Kiểm thử UI/UX
-
-| Tính năng | Mô tả | Kết quả |
-|-----------|-------|---------|
-| Alternating row colors | Bảng Result/CodeSubmit/AI có màu xen kẽ | ✅ Dễ đọc hơn |
-| Nút Cập nhật đề thi | Sửa đề đã chọn trong ProblemEntryPanel | ✅ Hoạt động đúng |
-| Xóa kết quả | Xóa toàn bộ submission | ✅ Có xác nhận, hoạt động đúng |
-| Back button | Ẩn ở Dashboard, hiện ở các panel khác | ✅ Không còn NPE |
-| UTF-8 tiếng Việt | Tiêu đề, mô tả đề chứa tiếng Việt | ✅ Lưu/đọc đúng |
-
----
-
-## 7. Các lỗi đã phát hiện và khắc phục
-
-| Lỗi | Mức độ | Nguyên nhân | Cách khắc phục |
-|-----|--------|-------------|----------------|
-| C++ Runtime Error (RE) trên Windows | **Critical** | `ProcessBuilder("solution.exe")` tìm trong PATH, không thấy file | Dùng `workDir.resolve("solution.exe")` → absolute path |
-| Nút Back bị NullPointerException | **Critical** | `JButton backBtn` shadowing field | Gán `this.backBtn = new JButton(...)` |
-| UI treo khi gọi API AI | **High** | Không có timeout OkHttpClient | Thêm connect/write/read timeout 30s |
-| Mất file rác khi xóa đề | **High** | `deleteProblem` chỉ xóa DB, không xóa file ảnh/testcase | Xóa file trước khi xóa DB record |
-| Memory leak SwingWorker | **Medium** | Không cancel worker cũ khi chuyển panel | Lưu worker làm field, gọi `cancel(true)` trước khi tạo mới |
-| Bảng khó đọc | **Low** | Không có phân biệt hàng | Thêm `AlternatingRowRenderer` |
-
----
-
-## 8. Tối ưu hóa đã thực hiện
-
-1. **Judge Engine:** Giới hạn stdout/stderr 10MB tránh OOM.
-2. **MLE Detection:** Dùng `ProcessHandle` + `/proc/{pid}/statm` (Linux/Mac), Windows fallback.
-3. **Charset UTF-8:** Tất cả file read/write đều chỉ định `StandardCharsets.UTF_8`.
-4. **Input Validation:** Giới hạn title length, time/memory limit hợp lệ.
-5. **Resource Cleanup:** Xóa temp directory sau mỗi lần chấm.
-
----
-
-## 9. Kết luận
-
-Hệ thống **AI-Powered CP Judge System** đã vượt qua toàn bộ 20 bài kiểm thử tự động và kiểm thử thủ công với các ngôn ngữ Java, C++, Python. Các lỗi nghiêm trọng (C++ RE, NPE, UI treo) đã được khắc phục. Giao diện người dùng được cải thiện với alternating row colors, cancelable AI tasks, và các nút chức năng đầy đủ.
-
-**Đánh giá tổng quan:** ✅ **Đạt yêu cầu**, sẵn sàng demo và nộp bài.
-
----
-
-*Report generated on 2026-05-12*
