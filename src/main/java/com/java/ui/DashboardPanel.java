@@ -175,14 +175,54 @@ public class DashboardPanel extends JPanel {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if ("EXIT".equals(action)) System.exit(0);
                 else if ("DOCS".equals(action)) {
-                    JOptionPane.showMessageDialog(card,
-                        "HƯỚNG DẪN SỬ DỤNG\n\n" +
-                        "1. Nhập đề thi: Vào 'Nhập đề thi' → Điền tiêu đề, nội dung → Chọn ảnh (nếu có) → Lưu\n" +
-                        "2. AI Phân tích: Vào 'AI Phân tích' → Chọn đề → Nhấn 'Phân tích' → AI sẽ sinh testcase & code\n" +
-                        "3. Nộp code: Vào 'Nộp code mẫu' → Chọn đề → Dán code → Chấm thử\n" +
-                        "4. Xem kết quả: Vào 'Kết quả chấm' → Tải kết quả\n\n" +
-                        "Lưu ý: Cần cấu hình API Key trong config.properties (ai.api.key) để dùng AI",
-                        "Hướng dẫn sử dụng", JOptionPane.INFORMATION_MESSAGE);
+                    String docs =
+                        "══════════════════════════════════════════\n" +
+                        "  HƯỚNG DẪN CÀI ĐẶT\n" +
+                        "══════════════════════════════════════════\n" +
+                        "Yêu cầu hệ thống:\n" +
+                        "  • Java JDK 17+ (https://adoptium.net)\n" +
+                        "  • MySQL 8.0+ hoặc Docker\n" +
+                        "  • g++ (cho C++): MinGW-w64 trên Windows\n\n" +
+                        "Cấu hình database:\n" +
+                        "  Chạy Docker: docker run -d -p 3306:3306\n" +
+                        "    -e MYSQL_ROOT_PASSWORD=root\n" +
+                        "    -e MYSQL_DATABASE=JudgeSystem mysql:8.0\n\n" +
+                        "Cấu hình AI (file config.properties):\n" +
+                        "  ai.api.key=<Google Gemini API Key>\n" +
+                        "  ai.model=gemini-2.5-flash\n" +
+                        "  Lấy key tại: aistudio.google.com/apikey\n\n" +
+                        "Chạy chương trình:\n" +
+                        "  java -jar JudgeSystem-1.0-SNAPSHOT.jar\n\n" +
+                        "══════════════════════════════════════════\n" +
+                        "  HƯỚNG DẪN SỬ DỤNG\n" +
+                        "══════════════════════════════════════════\n" +
+                        "Bước 1 — Nhập đề thi:\n" +
+                        "  Vào 'Nhập đề thi' → Điền tiêu đề, nội dung\n" +
+                        "  → Chọn ảnh (tùy chọn) → Lưu vào CSDL\n\n" +
+                        "Bước 2 — AI Phân tích & Sinh testcase:\n" +
+                        "  Vào 'AI Phân tích' → Chọn đề → 'Phân tích'\n" +
+                        "  → AI sinh code AC + 5 inputs đa dạng\n" +
+                        "  → Hệ thống tự chạy code AC để tính output\n" +
+                        "  → Testcase luôn đúng 100%\n\n" +
+                        "Bước 3 — Kiểm tra testcase:\n" +
+                        "  Vào 'Nộp code mẫu' → Chọn đề và loại code:\n" +
+                        "  • [AC] → Chấm → phải All AC\n" +
+                        "    (xác nhận testcase đúng)\n" +
+                        "  • [WA] → Chấm → phải có WA\n" +
+                        "    (xác nhận testcase đủ mạnh)\n" +
+                        "  • [TLE] → Chấm → phải có TLE\n" +
+                        "    (xác nhận testcase đủ lớn)\n" +
+                        "  → 'Lưu code mẫu' để lưu vào CSDL\n\n" +
+                        "Bước 4 — Xem kết quả:\n" +
+                        "  Vào 'Kết quả chấm' → xem lịch sử submissions";
+                    JTextArea ta = new JTextArea(docs);
+                    ta.setEditable(false);
+                    ta.setFont(new Font("Consolas", Font.PLAIN, 13));
+                    ta.setBackground(new Color(0x1e, 0x1e, 0x2e));
+                    ta.setForeground(Color.WHITE);
+                    JScrollPane sp = new JScrollPane(ta);
+                    sp.setPreferredSize(new Dimension(520, 480));
+                    JOptionPane.showMessageDialog(card, sp, "Hướng dẫn cài đặt & sử dụng", JOptionPane.INFORMATION_MESSAGE);
                 }
                 else mainFrame.showPanel(action);
             }

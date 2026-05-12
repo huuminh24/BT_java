@@ -145,6 +145,10 @@ public class ProblemService {
         return sampleCodeDAO.getByProblemId(problemId);
     }
 
+    public boolean deleteSampleCode(int id) {
+        return sampleCodeDAO.deleteSampleCode(id);
+    }
+
     public List<Submission> runJudging(int problemId, int sampleCodeId, JudgeService judgeService) {
         Problem problem = getProblemById(problemId);
         SampleCode sampleCode = sampleCodeDAO.getById(sampleCodeId);

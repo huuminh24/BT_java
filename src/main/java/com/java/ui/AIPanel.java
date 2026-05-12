@@ -19,7 +19,6 @@ public class AIPanel extends JPanel {
     private AIService aiService = new GeminiAIService();
     private JComboBox<ProblemComboItem> problemCombo;
     private JTextArea logArea;
-    private JCheckBox chkGenerateSolution;
     private JCheckBox chkGenerateChecker;
     private JTable testcaseTable;
     private DefaultTableModel testcaseTableModel;
@@ -47,10 +46,9 @@ public class AIPanel extends JPanel {
         btnRefresh.addActionListener(e -> refreshProblemList());
         topPanel.add(btnRefresh);
 
-        chkGenerateSolution = new JCheckBox("Tự động sinh code AC");
         chkGenerateChecker = new JCheckBox("Sinh checker script");
-        topPanel.add(chkGenerateSolution);
         topPanel.add(chkGenerateChecker);
+        topPanel.add(new JLabel("(AI tự động sinh code AC + tính output bằng javac)"));
 
         JButton btnViewTC = new JButton("📋 Xem testcase hiện có");
         btnViewTC.addActionListener(e -> viewExistingTestcases());

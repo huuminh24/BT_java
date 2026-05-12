@@ -225,9 +225,13 @@ public class CodeSubmitPanel extends JPanel {
 
             @Override
             protected List<Submission> doInBackground() {
-                tempCodeId = problemService.addSampleCode(selected.id, code, language, expectedType, false);
+                tempCodeId = problemService.addSampleCode(selected.id, code, language, "TEMP", false);
                 if (tempCodeId <= 0) return new java.util.ArrayList<>();
-                return problemService.runJudging(selected.id, tempCodeId, new DefaultJudgeService());
+                try {
+                    return problemService.runJudging(selected.id, tempCodeId, new DefaultJudgeService());
+                } finally {
+                    problemService.deleteSampleCode(tempCodeId);
+                }
             }
 
             @Override
