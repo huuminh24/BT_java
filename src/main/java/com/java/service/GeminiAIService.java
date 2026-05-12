@@ -110,24 +110,32 @@ public class GeminiAIService implements AIService {
 
     private String buildAnalyzePrompt(Problem problem) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Bạn là trợ lý AI cho hệ thống chấm bài lập trình.\n");
-        sb.append("Hãy phân tích đề thi sau và trả về KẾT QUẢ DƯỚI DẠNG JSON với cấu trúc:\n");
+        sb.append("Bạn là chuyên gia lập trình thi đấu (competitive programming). Nhiệm vụ của bạn là:\n");
+        sb.append("1. Phân tích đề bài kỹ lưỡng, xác định CHÍNH XÁC thuật toán và công thức.\n");
+        sb.append("2. Sinh 5 testcase đa dạng VÀ TỰ KIỂM TRA output bằng cách chạy thuật toán tay từng bước.\n");
+        sb.append("3. Chỉ đưa ra output sau khi đã xác nhận kết quả là đúng.\n\n");
+        sb.append("QUY TẮC BẮT BUỘC:\n");
+        sb.append("- Output phải là KẾT QUẢ CHÍNH XÁC của bài toán, không phải ước lượng.\n");
+        sb.append("- Với mỗi testcase, hãy trace thuật toán từng bước để xác nhận output.\n");
+        sb.append("- Edge cases: n=1, tất cả âm, tất cả bằng nhau, số rất lớn/rất nhỏ.\n");
+        sb.append("- Input và output phải đúng format: KHÔNG có khoảng trắng thừa cuối dòng.\n\n");
+        sb.append("Trả về JSON theo đúng cấu trúc sau (KHÔNG thêm text ngoài JSON):\n");
         sb.append("{\n");
-        sb.append("  \"explanation\": \"Mô tả ngắn gọn bài toán\",\n");
+        sb.append("  \"explanation\": \"Mô tả thuật toán và công thức giải\",\n");
         sb.append("  \"testcases\": [\n");
-        sb.append("    {\"type\": \"small|large|edge|normal\", \"input\": \"...\", \"output\": \"...\"},\n");
+        sb.append("    {\"type\": \"small|large|edge|normal\", \"input\": \"...\", \"output\": \"...\", \"trace\": \"giải thích tại sao output này đúng\"}\n");
         sb.append("  ],\n");
-        sb.append("  \"checker_needed\": true/false,\n");
-        sb.append("  \"checker_script\": \"nếu checker_needed=true thì viết script python checker\"\n");
+        sb.append("  \"checker_needed\": false,\n");
+        sb.append("  \"checker_script\": null\n");
         sb.append("}\n\n");
-        sb.append("Đề thi:\n");
+        sb.append("ĐỀ THI:\n");
         sb.append("Tiêu đề: ").append(problem.getTitle()).append("\n");
-        sb.append("Nội dung: ").append(problem.getDescription()).append("\n");
-        sb.append("Loại kỳ thi: ").append(problem.getContestType()).append("\n");
+        sb.append("Nội dung:\n").append(problem.getDescription()).append("\n");
+        if (problem.getContestType() != null && !problem.getContestType().isBlank()) {
+            sb.append("Loại kỳ thi: ").append(problem.getContestType()).append("\n");
+        }
         sb.append("Giới hạn thời gian: ").append(problem.getTimeLimit()).append("ms\n");
         sb.append("Giới hạn bộ nhớ: ").append(problem.getMemoryLimit()).append("MB\n");
-        sb.append("\nYêu cầu: Sinh 3-5 testcase đa dạng (nhỏ, lớn, edge cases). ");
-        sb.append("Trả về JSON hoàn chỉnh, KHÔNG dừng giữa chừng. Không giải thích quá dài.");
         return sb.toString();
     }
 
@@ -245,8 +253,10 @@ public class GeminiAIService implements AIService {
 
         try {
             JsonObject obj = gson.fromJson(jsonBlock, JsonObject.class);
-            result.setExplanation(obj.has("explanation") ? obj.get("explanation").getAsString() : "");
-            result.setGeneratedChecker(obj.has("checker_script") ? obj.get("checker_script").getAsString() : "");
+            JsonElement expEl = obj.get("explanation");
+            result.setExplanation(expEl != null && !expEl.isJsonNull() ? expEl.getAsString() : "");
+            JsonElement chkEl = obj.get("checker_script");
+            result.setGeneratedChecker(chkEl != null && !chkEl.isJsonNull() ? chkEl.getAsString() : "");
 
             List<Testcase> testcases = new ArrayList<>();
             if (obj.has("testcases") && obj.get("testcases").isJsonArray()) {

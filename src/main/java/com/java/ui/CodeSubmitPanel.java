@@ -81,7 +81,7 @@ public class CodeSubmitPanel extends JPanel {
         statusLabel.setForeground(AppTheme.TEXT_SECONDARY);
         rightPanel.add(statusLabel, BorderLayout.NORTH);
 
-        String[] columns = {"Testcase", "Status", "Time (ms)", "Error"};
+        String[] columns = {"Testcase", "Status", "Time (ms)", "Expected", "Actual", "Error"};
         resultTableModel = new DefaultTableModel(columns, 0) {
             @Override public boolean isCellEditable(int row, int column) { return false; }
         };
@@ -90,10 +90,12 @@ public class CodeSubmitPanel extends JPanel {
         resultTable.setRowHeight(32);
         resultTable.setDefaultRenderer(Object.class, new AlternatingRowRenderer());
         resultTable.getColumnModel().getColumn(1).setCellRenderer(new StatusRenderer());
-        resultTable.getColumnModel().getColumn(0).setPreferredWidth(70);
-        resultTable.getColumnModel().getColumn(1).setPreferredWidth(60);
-        resultTable.getColumnModel().getColumn(2).setPreferredWidth(70);
-        resultTable.getColumnModel().getColumn(3).setPreferredWidth(200);
+        resultTable.getColumnModel().getColumn(0).setPreferredWidth(60);
+        resultTable.getColumnModel().getColumn(1).setPreferredWidth(55);
+        resultTable.getColumnModel().getColumn(2).setPreferredWidth(65);
+        resultTable.getColumnModel().getColumn(3).setPreferredWidth(120);
+        resultTable.getColumnModel().getColumn(4).setPreferredWidth(120);
+        resultTable.getColumnModel().getColumn(5).setPreferredWidth(150);
 
         JScrollPane scrollPane = new JScrollPane(resultTable);
         scrollPane.setPreferredSize(new Dimension(400, 300));
@@ -193,36 +195,61 @@ public class CodeSubmitPanel extends JPanel {
 
         if (judgeWorker != null && !judgeWorker.isDone()) {
             judgeWorker.cancel(true);
-        }
-
-        resultTableModel.setRowCount(0);
-        statusLabel.setText("⏳ Đang chấm bài...");
-        statusLabel.setForeground(AppTheme.ACCENT_YELLOW);
-
-        int sampleCodeId = problemService.addSampleCode(selected.id, code, (String) languageCombo.getSelectedItem(), (String) expectedTypeCombo.getSelectedItem(), false);
-        if (sampleCodeId <= 0) {
-            statusLabel.setText("❌ Lỗi lưu code tạm.");
+            statusLabel.setText("Dừng chấm.");
             return;
         }
 
+        List<com.java.model.Testcase> testcases = problemService.getTestcasesByProblem(selected.id);
+        if (testcases.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Chưa có testcase nào! Hãy vào AI Phân tích để sinh testcase trước.");
+            return;
+        }
+
+        resultTableModel.setRowCount(0);
+        statusLabel.setText("⏳ Đang chấm bài... (nhấn lại để dừng)");
+        statusLabel.setForeground(AppTheme.ACCENT_YELLOW);
+
+        String language = (String) languageCombo.getSelectedItem();
+        String expectedType = (String) expectedTypeCombo.getSelectedItem();
+
         judgeWorker = new SwingWorker<>() {
+            int tempCodeId = -1;
+
             @Override
             protected List<Submission> doInBackground() {
-                return problemService.runJudging(selected.id, sampleCodeId, new DefaultJudgeService());
+                tempCodeId = problemService.addSampleCode(selected.id, code, language, expectedType, false);
+                if (tempCodeId <= 0) return new java.util.ArrayList<>();
+                return problemService.runJudging(selected.id, tempCodeId, new DefaultJudgeService());
             }
 
             @Override
             protected void done() {
                 try {
                     List<Submission> results = get();
+                    if (results.isEmpty() && tempCodeId <= 0) {
+                        statusLabel.setText("❌ Lỗi lưu code.");
+                        statusLabel.setForeground(AppTheme.ACCENT_RED);
+                        return;
+                    }
                     int ac = 0, wa = 0, tle = 0, other = 0;
+                    List<com.java.model.Testcase> tcs = problemService.getTestcasesByProblem(selected.id);
+                    java.util.Map<Integer, com.java.model.Testcase> tcMap = new java.util.HashMap<>();
+                    for (com.java.model.Testcase tc : tcs) tcMap.put(tc.getId(), tc);
+
                     for (Submission sub : results) {
+                        com.java.model.Testcase tc = tcMap.get(sub.getTestcaseId());
+                        String expected = tc != null && tc.getExpectedOutput() != null ?
+                            shorten(tc.getExpectedOutput(), 30) : "";
+                        String actual = sub.getActualOutput() != null ?
+                            shorten(sub.getActualOutput(), 30) : "";
                         String errorPreview = sub.getErrorMessage() != null ?
-                            (sub.getErrorMessage().length() > 50 ? sub.getErrorMessage().substring(0, 50) + "..." : sub.getErrorMessage()) : "";
+                            shorten(sub.getErrorMessage(), 40) : "";
                         resultTableModel.addRow(new Object[]{
                             "TC#" + sub.getTestcaseId(),
                             sub.getStatus(),
                             sub.getExecutionTime() + "ms",
+                            expected,
+                            actual,
                             errorPreview
                         });
                         switch (sub.getStatus()) {
@@ -233,10 +260,10 @@ public class CodeSubmitPanel extends JPanel {
                         }
                     }
                     String verdict;
-                    if (wa == 0 && tle == 0 && other == 0 && ac > 0) verdict = "✅ All AC!";
-                    else verdict = String.format("AC: %d | WA: %d | TLE: %d | Other: %d", ac, wa, tle, other);
+                    if (wa == 0 && tle == 0 && other == 0 && ac > 0) verdict = "✅ All AC! (" + ac + "/" + results.size() + ")";
+                    else verdict = String.format("AC:%d WA:%d TLE:%d Err:%d / Tổng:%d", ac, wa, tle, other, results.size());
                     statusLabel.setText(verdict);
-                    statusLabel.setForeground(wa > 0 || tle > 0 ? AppTheme.ACCENT_RED : AppTheme.ACCENT_GREEN);
+                    statusLabel.setForeground(wa > 0 || tle > 0 || other > 0 ? AppTheme.ACCENT_RED : AppTheme.ACCENT_GREEN);
                 } catch (Exception ex) {
                     if (!isCancelled()) {
                         statusLabel.setText("❌ Lỗi: " + ex.getMessage());
@@ -248,6 +275,12 @@ public class CodeSubmitPanel extends JPanel {
             }
         };
         judgeWorker.execute();
+    }
+
+    private String shorten(String s, int maxLen) {
+        if (s == null) return "";
+        String oneLine = s.replace("\n", "⏎").replace("\r", "");
+        return oneLine.length() > maxLen ? oneLine.substring(0, maxLen) + "…" : oneLine;
     }
 
     private static class AlternatingRowRenderer extends DefaultTableCellRenderer {

@@ -1,3 +1,4 @@
+content = """\
 # Database Configuration
 db.url=jdbc:mysql://localhost:3306/JudgeSystem?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
 db.username=root
@@ -23,3 +24,9 @@ judge.default.memorylimit=256
 judge.compiler.java=javac
 judge.compiler.cpp=g++
 judge.runner.java=java
+"""
+
+path = r"c:\Users\ADMIN\Downloads\BT_Java-master\BT_Java-master\src\main\resources\config.properties"
+with open(path, "w", encoding="utf-8") as f:
+    f.write(content)
+print("OK - da cau hinh Gemini 2.5 Flash Preview")

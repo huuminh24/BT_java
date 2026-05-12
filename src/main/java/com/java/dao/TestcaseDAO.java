@@ -92,4 +92,30 @@ public class TestcaseDAO {
             return false;
         }
     }
+
+    // 5. Xóa tất cả testcase của một bài
+    public int deleteAllByProblemId(int problemId) {
+        String sql = "DELETE FROM Testcases WHERE problem_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, problemId);
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    // 6. Xóa chỉ testcase do AI sinh cho một bài
+    public int deleteAiGeneratedByProblemId(int problemId) {
+        String sql = "DELETE FROM Testcases WHERE problem_id = ? AND is_ai_generated = TRUE";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, problemId);
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 }

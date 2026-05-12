@@ -150,8 +150,7 @@ public class DashboardPanel extends JPanel {
         ));
         card.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        JLabel lblTitle = new JLabel(title);
-        lblTitle.setFont(AppTheme.FONT_SUBHEAD);
+        JLabel lblTitle = new JLabel("<html><span style='font-family:Segoe UI Emoji;font-size:11pt;font-weight:bold;'>" + title + "</span></html>");
         lblTitle.setForeground(accent);
 
         JLabel lblDesc = new JLabel(desc);

@@ -56,6 +56,16 @@ public class AIPanel extends JPanel {
         btnViewTC.addActionListener(e -> viewExistingTestcases());
         topPanel.add(btnViewTC);
 
+        JButton btnDeleteAI = AppTheme.createAccentButton("🗑 Xóa testcase AI", AppTheme.ACCENT_YELLOW);
+        btnDeleteAI.setToolTipText("Xóa các testcase do AI sinh (giữ testcase thủ công)");
+        btnDeleteAI.addActionListener(e -> deleteAiTestcases());
+        topPanel.add(btnDeleteAI);
+
+        JButton btnDeleteAll = AppTheme.createAccentButton("💥 Xóa tất cả TC", AppTheme.ACCENT_RED);
+        btnDeleteAll.setToolTipText("Xóa toàn bộ testcase của đề này");
+        btnDeleteAll.addActionListener(e -> deleteAllTestcases());
+        topPanel.add(btnDeleteAll);
+
         add(topPanel, BorderLayout.PAGE_START);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -201,6 +211,32 @@ public class AIPanel extends JPanel {
             }
         };
         aiWorker.execute();
+    }
+
+    private void deleteAiTestcases() {
+        ProblemComboItem selected = (ProblemComboItem) problemCombo.getSelectedItem();
+        if (selected == null) { JOptionPane.showMessageDialog(this, "Chọn đề thi trước!"); return; }
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Xóa tất cả testcase DO AI SINH của đề [" + selected.title + "]?",
+            "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (confirm == JOptionPane.YES_OPTION) {
+            int count = problemService.deleteAiTestcasesForProblem(selected.id);
+            logArea.append("Đã xóa " + count + " testcase AI của đề [" + selected.title + "].\n");
+            testcaseTableModel.setRowCount(0);
+        }
+    }
+
+    private void deleteAllTestcases() {
+        ProblemComboItem selected = (ProblemComboItem) problemCombo.getSelectedItem();
+        if (selected == null) { JOptionPane.showMessageDialog(this, "Chọn đề thi trước!"); return; }
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Xóa TOÀN BỘ testcase của đề [" + selected.title + "]? Không thể hoàn tác!",
+            "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (confirm == JOptionPane.YES_OPTION) {
+            int count = problemService.deleteAllTestcasesForProblem(selected.id);
+            logArea.append("Đã xóa " + count + " testcase của đề [" + selected.title + "].\n");
+            testcaseTableModel.setRowCount(0);
+        }
     }
 
     private static class AlternatingRowRenderer extends DefaultTableCellRenderer {

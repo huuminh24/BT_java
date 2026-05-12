@@ -82,6 +82,14 @@ public class ProblemService {
         return testcaseDAO.getTestcasesByProblemId(problemId);
     }
 
+    public int deleteAllTestcasesForProblem(int problemId) {
+        return testcaseDAO.deleteAllByProblemId(problemId);
+    }
+
+    public int deleteAiTestcasesForProblem(int problemId) {
+        return testcaseDAO.deleteAiGeneratedByProblemId(problemId);
+    }
+
     public int addSampleCode(int problemId, String code, String language, String expectedType, boolean aiGenerated) {
         SampleCode sc = new SampleCode();
         sc.setProblemId(problemId);
