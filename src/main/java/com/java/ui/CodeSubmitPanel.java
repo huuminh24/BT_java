@@ -59,11 +59,13 @@ public class CodeSubmitPanel extends JPanel {
         topPanel.add(languageCombo, gbc);
 
         gbc.gridx = 0; gbc.gridy = 2;
-        topPanel.add(new JLabel("Loại code:"), gbc);
+        topPanel.add(new JLabel("Loại code nộp:"), gbc);
         gbc.gridx = 1;
-        expectedTypeCombo = new JComboBox<>(new String[]{"AC - Code tham khảo đúng"});
-        expectedTypeCombo.setEnabled(false);
-        expectedTypeCombo.setToolTipText("Chỉ lưu code AC làm reference để tính expected output");
+        expectedTypeCombo = new JComboBox<>(new String[]{"AC", "WA", "TLE"});
+        expectedTypeCombo.setToolTipText(
+            "AC = code đúng (kiểm testcase đúng không)\n" +
+            "WA = code sai ló đức (kiểm testcase có bắt được không)\n" +
+            "TLE = code chạm (kiểm testcase có đủ lớn không)");
         topPanel.add(expectedTypeCombo, gbc);
 
         gbc.gridx = 2; gbc.gridy = 2;
@@ -216,7 +218,7 @@ public class CodeSubmitPanel extends JPanel {
         statusLabel.setForeground(AppTheme.ACCENT_YELLOW);
 
         String language = (String) languageCombo.getSelectedItem();
-        String expectedType = "AC";
+        String expectedType = (String) expectedTypeCombo.getSelectedItem();
 
         judgeWorker = new SwingWorker<>() {
             int tempCodeId = -1;
@@ -265,11 +267,10 @@ public class CodeSubmitPanel extends JPanel {
                             default -> other++;
                         }
                     }
-                    String verdict;
-                    if (wa == 0 && tle == 0 && other == 0 && ac > 0) verdict = "✅ All AC! (" + ac + "/" + results.size() + ")";
-                    else verdict = String.format("AC:%d WA:%d TLE:%d Err:%d / Tổng:%d", ac, wa, tle, other, results.size());
+                    String verdict = buildVerdict(expectedType, ac, wa, tle, other, results.size());
                     statusLabel.setText(verdict);
-                    statusLabel.setForeground(wa > 0 || tle > 0 || other > 0 ? AppTheme.ACCENT_RED : AppTheme.ACCENT_GREEN);
+                    boolean isGood = isGoodVerdict(expectedType, ac, wa, tle, results.size());
+                    statusLabel.setForeground(isGood ? AppTheme.ACCENT_GREEN : AppTheme.ACCENT_RED);
                 } catch (Exception ex) {
                     if (!isCancelled()) {
                         statusLabel.setText("❌ Lỗi: " + ex.getMessage());
@@ -323,6 +324,37 @@ public class CodeSubmitPanel extends JPanel {
                 }
             }
         }.execute();
+    }
+
+    private String buildVerdict(String expectedType, int ac, int wa, int tle, int other, int total) {
+        switch (expectedType) {
+            case "AC":
+                if (wa == 0 && tle == 0 && other == 0 && ac > 0)
+                    return "✅ All AC (" + ac + "/" + total + ") — Testcase ĐÚNG, code chạy đúng!";
+                else
+                    return String.format("⚠ AC:%d WA:%d TLE:%d / %d — Testcase có thể SAI hoặc code chưa đúng!", ac, wa, tle, total);
+            case "WA":
+                if (wa > 0)
+                    return String.format("✅ WA:%d AC:%d / %d — Testcase ĐỦ MẠNH, bắt được code sai!", wa, ac, total);
+                else
+                    return String.format("⚠ All AC (%d/%d) — Testcase QUÁ YẾU, không bắt được code sai!", ac, total);
+            case "TLE":
+                if (tle > 0)
+                    return String.format("✅ TLE:%d / %d — Testcase ĐỦ LỚN, bắt được code chậm!", tle, total);
+                else
+                    return String.format("⚠ Không có TLE (%d/%d AC) — Testcase chưa đủ lớn!", ac, total);
+            default:
+                return String.format("AC:%d WA:%d TLE:%d / %d", ac, wa, tle, total);
+        }
+    }
+
+    private boolean isGoodVerdict(String expectedType, int ac, int wa, int tle, int total) {
+        switch (expectedType) {
+            case "AC":  return wa == 0 && tle == 0 && ac > 0;
+            case "WA":  return wa > 0;
+            case "TLE": return tle > 0;
+            default:    return true;
+        }
     }
 
     private String shorten(String s, int maxLen) {
