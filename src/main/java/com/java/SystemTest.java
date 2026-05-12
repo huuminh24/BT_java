@@ -118,7 +118,7 @@ public class SystemTest {
         int pid = ps.createProblem(p);
         ok(pid > 0, "Create problem in flow");
 
-        ok(ps.addTestcaseFull(pid, "3 5\n", "8\n", "small", false), "Add testcase");
+        ok(ps.addTestcaseFull(pid, "3 5\n", "8\n", "small", false) > 0, "Add testcase");
         String code = "import java.util.Scanner;public class Main{public static void main(String[]a){Scanner s=new Scanner(System.in);System.out.println(s.nextInt()+s.nextInt());}}";
         int sid = ps.addSampleCode(pid, code, "java", "AC", false);
         ok(sid > 0, "Add sample code AC");

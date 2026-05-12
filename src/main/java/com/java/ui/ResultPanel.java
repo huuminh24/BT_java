@@ -11,7 +11,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ResultPanel extends JPanel {
+public class ResultPanel extends JPanel implements Refreshable {
     private ProblemService problemService;
     private JTable resultTable;
     private DefaultTableModel tableModel;
@@ -31,7 +31,6 @@ public class ResultPanel extends JPanel {
         statsLabel = AppTheme.createBodyLabel("Chưa có dữ liệu");
         header.add(title, BorderLayout.WEST);
         header.add(statsLabel, BorderLayout.EAST);
-        add(header, BorderLayout.NORTH);
 
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         filterPanel.setBackground(AppTheme.BG_DARK);
@@ -41,7 +40,13 @@ public class ResultPanel extends JPanel {
         refreshFilterList();
         filterCombo.addItemListener(e -> loadResults());
         filterPanel.add(filterCombo);
-        add(filterPanel, BorderLayout.BEFORE_FIRST_LINE);
+
+        JPanel topSection = new JPanel();
+        topSection.setLayout(new BoxLayout(topSection, BoxLayout.Y_AXIS));
+        topSection.setBackground(AppTheme.BG_DARK);
+        topSection.add(header);
+        topSection.add(filterPanel);
+        add(topSection, BorderLayout.NORTH);
 
         String[] columns = {"ID", "Đề thi", "Code mẫu", "Testcase", "Status", "Time (ms)", "Memory (KB)", "Error"};
         tableModel = new DefaultTableModel(columns, 0) {
@@ -76,6 +81,11 @@ public class ResultPanel extends JPanel {
         btnPanel.add(btnLoad);
         btnPanel.add(btnClear);
         add(btnPanel, BorderLayout.SOUTH);
+    }
+
+    @Override
+    public void refresh() {
+        refreshFilterList();
     }
 
     private void refreshFilterList() {

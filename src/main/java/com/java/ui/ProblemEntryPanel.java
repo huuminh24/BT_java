@@ -35,7 +35,6 @@ public class ProblemEntryPanel extends JPanel {
 
         JPanel leftPanel = new JPanel(new BorderLayout(8, 8));
         leftPanel.setBackground(AppTheme.BG_DARK);
-        leftPanel.setPreferredSize(new Dimension(280, 0));
 
         JLabel listLabel = new JLabel("Danh sách đề đã có:");
         listLabel.setForeground(AppTheme.TEXT_SECONDARY);

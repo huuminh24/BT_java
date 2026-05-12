@@ -14,7 +14,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-public class AIPanel extends JPanel {
+public class AIPanel extends JPanel implements Refreshable {
     private ProblemService problemService;
     private AIService aiService = new GeminiAIService();
     private JComboBox<ProblemComboItem> problemCombo;
@@ -23,6 +23,7 @@ public class AIPanel extends JPanel {
     private JCheckBox chkGenerateChecker;
     private JTable testcaseTable;
     private DefaultTableModel testcaseTableModel;
+    private java.util.List<Integer> testcaseIds = new java.util.ArrayList<>();
     private SwingWorker<AIResponse, Void> aiWorker;
 
     public AIPanel(ProblemService problemService) {
@@ -94,7 +95,17 @@ public class AIPanel extends JPanel {
         JButton btnAnalyze = AppTheme.createAccentButton("🚀 Phân tích đề & Sinh testcase", AppTheme.ACCENT_PURPLE);
         btnAnalyze.addActionListener(e -> runAIAnalysis());
         btnPanel.add(btnAnalyze);
+
+        JButton btnDeleteTC = AppTheme.createAccentButton("🗑 Xóa testcase đã chọn", AppTheme.ACCENT_RED);
+        btnDeleteTC.addActionListener(e -> deleteSelectedTestcase());
+        btnPanel.add(btnDeleteTC);
+
         add(btnPanel, BorderLayout.SOUTH);
+    }
+
+    @Override
+    public void refresh() {
+        refreshProblemList();
     }
 
     private void refreshProblemList() {
@@ -112,6 +123,7 @@ public class AIPanel extends JPanel {
             return;
         }
         testcaseTableModel.setRowCount(0);
+        testcaseIds.clear();
         List<Testcase> testcases = problemService.getTestcasesByProblem(selected.id);
         int i = 1;
         for (Testcase tc : testcases) {
@@ -119,11 +131,34 @@ public class AIPanel extends JPanel {
                 (tc.getInputData().length() > 80 ? tc.getInputData().substring(0, 80) + "..." : tc.getInputData()) : "";
             String outputPreview = tc.getExpectedOutput() != null ?
                 (tc.getExpectedOutput().length() > 80 ? tc.getExpectedOutput().substring(0, 80) + "..." : tc.getExpectedOutput()) : "";
+            testcaseIds.add(tc.getId());
             testcaseTableModel.addRow(new Object[]{
                 i++, tc.getTestcaseType(), inputPreview, outputPreview, tc.isAiGenerated() ? "✓" : "✗"
             });
         }
         logArea.append("Đã tải " + testcases.size() + " testcase hiện có.\n");
+    }
+
+    private void deleteSelectedTestcase() {
+        int selectedRow = testcaseTable.getSelectedRow();
+        if (selectedRow < 0 || selectedRow >= testcaseIds.size()) {
+            JOptionPane.showMessageDialog(this, "Chọn một testcase trong bảng để xóa!");
+            return;
+        }
+        int tcId = testcaseIds.get(selectedRow);
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Xóa testcase #" + (selectedRow + 1) + " (ID=" + tcId + ")?",
+            "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            boolean ok = problemService.deleteTestcase(tcId);
+            if (ok) {
+                testcaseTableModel.removeRow(selectedRow);
+                testcaseIds.remove(selectedRow);
+                logArea.append("✅ Đã xóa testcase ID=" + tcId + "\n");
+            } else {
+                JOptionPane.showMessageDialog(this, "❌ Xóa thất bại!");
+            }
+        }
     }
 
     private void runAIAnalysis() {
@@ -162,9 +197,10 @@ public class AIPanel extends JPanel {
                             int saved = 0;
                             int i = 1;
                             for (var tc : response.getTestcases()) {
-                                boolean ok = problemService.addTestcaseFull(problem.getId(), tc.getInputData(), tc.getExpectedOutput(), tc.getTestcaseType(), true);
-                                if (ok) {
+                                int newId = problemService.addTestcaseFull(problem.getId(), tc.getInputData(), tc.getExpectedOutput(), tc.getTestcaseType(), true);
+                                if (newId > 0) {
                                     saved++;
+                                    testcaseIds.add(newId);
                                     String inputPreview = tc.getInputData() != null ?
                                         (tc.getInputData().length() > 80 ? tc.getInputData().substring(0, 80) + "..." : tc.getInputData()) : "";
                                     String outputPreview = tc.getExpectedOutput() != null ?

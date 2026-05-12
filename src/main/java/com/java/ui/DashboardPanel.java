@@ -12,6 +12,7 @@ public class DashboardPanel extends JPanel {
     private MainFrame mainFrame;
     private ProblemService problemService;
     private JLabel statsLabel;
+    private JLabel[] statValueLabels = new JLabel[4];
     private SwingWorker<Void, Void> statsWorker;
 
     public DashboardPanel(MainFrame mainFrame, ProblemService problemService) {
@@ -34,10 +35,10 @@ public class DashboardPanel extends JPanel {
         JPanel statsRow = new JPanel(new GridLayout(1, 4, 16, 0));
         statsRow.setBackground(AppTheme.BG_DARK);
         statsRow.setOpaque(false);
-        statsRow.add(createStatCard("Đề thi", "0", AppTheme.ACCENT_CYAN));
-        statsRow.add(createStatCard("Testcases", "0", AppTheme.ACCENT_PURPLE));
-        statsRow.add(createStatCard("Code mẫu", "0", AppTheme.ACCENT_GREEN));
-        statsRow.add(createStatCard("Submissions", "0", AppTheme.ACCENT_YELLOW));
+        statsRow.add(createStatCard(0, "Đề thi", "0", AppTheme.ACCENT_CYAN));
+        statsRow.add(createStatCard(1, "Testcases", "0", AppTheme.ACCENT_PURPLE));
+        statsRow.add(createStatCard(2, "Code mẫu", "0", AppTheme.ACCENT_GREEN));
+        statsRow.add(createStatCard(3, "Submissions", "0", AppTheme.ACCENT_YELLOW));
         add(statsRow, BorderLayout.CENTER);
 
         JPanel grid = new JPanel(new GridLayout(2, 3, 20, 20));
@@ -48,8 +49,8 @@ public class DashboardPanel extends JPanel {
         grid.add(createCard("🤖 AI Phân tích", "Sinh testcase & code tự động bằng Gemini", AppTheme.ACCENT_PURPLE, "AI_PANEL"));
         grid.add(createCard("💻 Nộp code mẫu", "Nhập AC/WA/TLE và chấm thử", AppTheme.ACCENT_GREEN, "CODE_SUBMIT"));
         grid.add(createCard("📊 Kết quả chấm", "Xem submissions với màu AC/WA/TLE", AppTheme.ACCENT_YELLOW, "RESULT"));
-        grid.add(createCard("📖 Hướng dẫn", "Xem tài liệu sử dụng chi tiết", AppTheme.TEXT_SECONDARY, "DOCS"));
-        grid.add(createCard("🚪 Thoát", "Đóng ứng dụng", AppTheme.ACCENT_RED, "EXIT"));
+        grid.add(createCard("📖 Hướng dẫn", "Xem hướng dẫn sử dụng hệ thống", AppTheme.ACCENT_CYAN, "DOCS"));
+        grid.add(createCard("🚪 Thoát", "Đóng ứng dụng", Color.decode("#FF6B6B"), "EXIT"));
 
         add(grid, BorderLayout.SOUTH);
     }
@@ -106,21 +107,12 @@ public class DashboardPanel extends JPanel {
     }
 
     private void updateStatCardValue(int index, String value) {
-        Component centerPanel = getComponent(1);
-        if (centerPanel instanceof JPanel) {
-            Component card = ((JPanel) centerPanel).getComponent(index);
-            if (card instanceof JPanel) {
-                for (Component c : ((JPanel) card).getComponents()) {
-                    if (c instanceof JLabel && ((JLabel) c).getFont().equals(AppTheme.FONT_TITLE)) {
-                        ((JLabel) c).setText(value);
-                        break;
-                    }
-                }
-            }
+        if (statValueLabels[index] != null) {
+            statValueLabels[index].setText(value);
         }
     }
 
-    private JPanel createStatCard(String label, String value, Color accent) {
+    private JPanel createStatCard(int index, String label, String value, Color accent) {
         JPanel card = new JPanel(new BorderLayout(8, 4));
         card.setBackground(AppTheme.BG_CARD);
         card.setBorder(BorderFactory.createCompoundBorder(
@@ -131,6 +123,7 @@ public class DashboardPanel extends JPanel {
         JLabel valueLabel = new JLabel(value);
         valueLabel.setFont(AppTheme.FONT_TITLE);
         valueLabel.setForeground(accent);
+        statValueLabels[index] = valueLabel;
 
         JLabel lbl = new JLabel(label);
         lbl.setFont(AppTheme.FONT_SMALL);

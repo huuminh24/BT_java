@@ -58,7 +58,7 @@ public class ProblemService {
         }
     }
 
-    public boolean addTestcaseFull(int problemId, String inputContent, String outputContent, String type, boolean aiGenerated) {
+    public int addTestcaseFull(int problemId, String inputContent, String outputContent, String type, boolean aiGenerated) {
         Testcase tc = new Testcase();
         tc.setProblemId(problemId);
         tc.setInputData(inputContent);
@@ -74,12 +74,17 @@ public class ProblemService {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            return tc.getId();
         }
-        return saved;
+        return -1;
     }
 
     public List<Testcase> getTestcasesByProblem(int problemId) {
         return testcaseDAO.getTestcasesByProblemId(problemId);
+    }
+
+    public boolean deleteTestcase(int testcaseId) {
+        return testcaseDAO.deleteTestcase(testcaseId);
     }
 
     public int addSampleCode(int problemId, String code, String language, String expectedType, boolean aiGenerated) {
@@ -99,6 +104,23 @@ public class ProblemService {
             return sc.getId();
         }
         return -1;
+    }
+
+    public boolean updateSampleCode(int id, String code, String language, String expectedType) {
+        SampleCode sc = sampleCodeDAO.getById(id);
+        if (sc == null) return false;
+        sc.setCodeContent(code);
+        sc.setLanguage(language);
+        sc.setExpectedType(expectedType);
+        boolean ok = sampleCodeDAO.updateSampleCode(sc);
+        if (ok) {
+            try {
+                FileManager.saveSampleCode(sc.getProblemId(), id, code, language);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return ok;
     }
 
     public List<SampleCode> getSampleCodesByProblem(int problemId) {

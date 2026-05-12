@@ -14,7 +14,7 @@ import java.awt.*;
 import java.nio.file.Files;
 import java.util.List;
 
-public class CodeSubmitPanel extends JPanel {
+public class CodeSubmitPanel extends JPanel implements Refreshable {
     private ProblemService problemService;
     private JComboBox<ProblemComboItem> problemCombo;
     private JComboBox<String> languageCombo;
@@ -24,6 +24,8 @@ public class CodeSubmitPanel extends JPanel {
     private DefaultTableModel resultTableModel;
     private JLabel statusLabel;
     private SwingWorker<List<Submission>, Void> judgeWorker;
+    private int currentTrialSampleCodeId = -1;
+    private int currentTrialProblemId = -1;
 
     public CodeSubmitPanel(ProblemService problemService) {
         this.problemService = problemService;
@@ -32,7 +34,6 @@ public class CodeSubmitPanel extends JPanel {
         setBorder(AppTheme.BORDER_EMPTY_LG);
 
         JLabel lblTitle = AppTheme.createHeadingLabel("💻 Nộp code mẫu & Chấm thử");
-        add(lblTitle, BorderLayout.NORTH);
 
         JPanel topPanel = new JPanel(new GridBagLayout());
         topPanel.setBackground(AppTheme.BG_DARK);
@@ -69,7 +70,11 @@ public class CodeSubmitPanel extends JPanel {
         btnUploadFile.addActionListener(e -> uploadCodeFile());
         topPanel.add(btnUploadFile, gbc);
 
-        add(topPanel, BorderLayout.WEST);
+        JPanel northPanel = new JPanel(new BorderLayout(0, 8));
+        northPanel.setBackground(AppTheme.BG_DARK);
+        northPanel.add(lblTitle, BorderLayout.NORTH);
+        northPanel.add(topPanel, BorderLayout.CENTER);
+        add(northPanel, BorderLayout.NORTH);
 
         codeArea = AppTheme.createStyledTextArea(15, 50);
         add(new JScrollPane(codeArea), BorderLayout.CENTER);
@@ -117,6 +122,11 @@ public class CodeSubmitPanel extends JPanel {
         btnPanel.add(btnJudge);
         add(btnPanel, BorderLayout.SOUTH);
 
+        refreshProblems();
+    }
+
+    @Override
+    public void refresh() {
         refreshProblems();
     }
 
@@ -199,8 +209,26 @@ public class CodeSubmitPanel extends JPanel {
         statusLabel.setText("⏳ Đang chấm bài...");
         statusLabel.setForeground(AppTheme.ACCENT_YELLOW);
 
-        int sampleCodeId = problemService.addSampleCode(selected.id, code, (String) languageCombo.getSelectedItem(), (String) expectedTypeCombo.getSelectedItem(), false);
-        if (sampleCodeId <= 0) {
+        // Reset trial ID if problem changed
+        if (selected.id != currentTrialProblemId) {
+            currentTrialProblemId = selected.id;
+            currentTrialSampleCodeId = -1;
+        }
+
+        String language = (String) languageCombo.getSelectedItem();
+        String expectedType = (String) expectedTypeCombo.getSelectedItem();
+
+        if (currentTrialSampleCodeId <= 0) {
+            currentTrialSampleCodeId = problemService.addSampleCode(selected.id, code, language, expectedType, false);
+        } else {
+            boolean ok = problemService.updateSampleCode(currentTrialSampleCodeId, code, language, expectedType);
+            if (!ok) {
+                statusLabel.setText("❌ Lỗi cập nhật code tạm.");
+                return;
+            }
+        }
+
+        if (currentTrialSampleCodeId <= 0) {
             statusLabel.setText("❌ Lỗi lưu code tạm.");
             return;
         }
@@ -208,7 +236,7 @@ public class CodeSubmitPanel extends JPanel {
         judgeWorker = new SwingWorker<>() {
             @Override
             protected List<Submission> doInBackground() {
-                return problemService.runJudging(selected.id, sampleCodeId, new DefaultJudgeService());
+                return problemService.runJudging(selected.id, currentTrialSampleCodeId, new DefaultJudgeService());
             }
 
             @Override

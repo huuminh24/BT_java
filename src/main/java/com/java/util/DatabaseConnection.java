@@ -30,8 +30,8 @@ public class DatabaseConnection {
             } else {
                 props.load(input);
                 url = ensureUtf8Params(props.getProperty("db.url", "jdbc:mysql://localhost:3306/JudgeSystem"));
-                username = props.getProperty("db.username", "root");
-                password = props.getProperty("db.password", "123");
+                username = props.getProperty("db.username", "root").trim();
+                password = props.getProperty("db.password", "123").trim();
                 driver = props.getProperty("db.driver", "com.mysql.cj.jdbc.Driver");
             }
             Class.forName(driver);

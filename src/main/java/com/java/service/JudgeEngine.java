@@ -83,8 +83,10 @@ public class JudgeEngine {
     }
 
     private String extractJavaClassName(String code) {
+        String codeWithoutComments = code.replaceAll("//.*", "")
+                                         .replaceAll("(?s)/\\*.*?\\*/", "");
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("public\\s+class\\s+(\\w+)");
-        java.util.regex.Matcher matcher = pattern.matcher(code);
+        java.util.regex.Matcher matcher = pattern.matcher(codeWithoutComments);
         if (matcher.find()) {
             return matcher.group(1);
         }
@@ -163,13 +165,13 @@ public class JudgeEngine {
         switch (language.toLowerCase()) {
             case "java":
                 String className = findJavaClassName(workDir);
-                pb = new ProcessBuilder("java", "-cp", ".", className);
+                pb = new ProcessBuilder("java", "-Xmx" + memoryLimitMB + "m", "-cp", ".", className);
                 break;
             case "cpp":
             case "c++":
                 pb = IS_WINDOWS
-                    ? new ProcessBuilder(workDir.resolve("solution.exe").toString())
-                    : new ProcessBuilder("./solution");
+                    ? new ProcessBuilder(java.util.List.of(workDir.resolve("solution.exe").toString()))
+                    : new ProcessBuilder(java.util.List.of("./solution"));
                 break;
             case "python":
             case "py":
