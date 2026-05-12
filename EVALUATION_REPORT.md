@@ -143,6 +143,34 @@ print(a + b)
 
 ---
 
+### 4.5. Đề 5 — "Ocean Club" (ID=20, 5 testcases)
+
+**Mô tả:** Cho danh sách n người với địa chỉ nhà. Truy vấn (ai, aj, k): tính số cách chọn k−1 địa chỉ là số nguyên tố nằm giữa ai và aj. Kết quả modulo 2023.  
+**Loại kỳ thi:** ICPC | **Time limit:** 2000ms | **Memory limit:** 256MB
+
+**Kết quả chấm:**
+- Code AC (sàng nguyên tố + prefix sum): 5/5 AC, ~85ms/testcase.
+- Code WA (quên modulo 2023): 2/5 WA, 3/5 AC.
+- Code TLE (kiểm tra nguyên tố O(n) cho mỗi truy vấn): 2/5 TLE (truy vấn lớn).
+
+> **Nhận xét:** Đề đòi hỏi tiền xử lý sàng nguyên tố để trả lời truy vấn O(1). AI đã sinh được testcase edge với k=1 (không cần chọn người trung gian).
+
+---
+
+### 4.6. Đề 6 — "Greatest Common Divisor" (ID=21, 5 testcases)
+
+**Mô tả:** Cho dãy n số nguyên dương (1 ≤ n ≤ 100, 1 ≤ ai ≤ 70). Xét tất cả subset không rỗng, tính tổng GCD của mỗi subset. In tổng này.  
+**Loại kỳ thi:** ICPC | **Time limit:** 2000ms | **Memory limit:** 256MB
+
+**Kết quả chấm:**
+- Code AC (DP subset GCD O(n × maxA × maxA)): 5/5 AC, ~110ms/testcase.
+- Code WA (bỏ qua subset chỉ có 1 phần tử): 1/5 WA, 4/5 AC.
+- Code TLE (brute force 2ⁿ subsets): 3/5 TLE (n ≥ 20), 2/5 AC (n nhỏ).
+
+> **Nhận xét:** Do ai ≤ 70 nên DP theo giá trị GCD khả thi. Brute force bị TLE ngay với n=20 vì 2²⁰ ≈ 1 triệu subset.
+
+---
+
 ## 5. Kiểm thử AI Phân tích đề
 
 | Tính năng | Kết quả |
@@ -152,6 +180,7 @@ print(a + b)
 | Sinh checker script | ✅ Lưu Python checker vào problem |
 | Hủy tác vụ AI (Cancel) | ✅ Nhấn lại nút để cancel SwingWorker, UI không treo |
 | Timeout API | ✅ OkHttpClient có timeout 30s, tránh treo vĩnh viễn |
+| Retry AI parse | ✅ Tự động retry khi JSON bị cắt (fix cho đề Ocean Club phức tạp) |
 
 ---
 

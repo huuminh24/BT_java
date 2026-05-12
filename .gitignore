@@ -38,5 +38,11 @@ build/
 ### Windsurf / AI tools ###
 .windsurf/
 
+### Auto-generated Maven files ###
+dependency-reduced-pom.xml
+
+### Runtime data (auto-created) ###
+JudgeSystemData/
+
 ### Mac OS ###
 .DS_Store

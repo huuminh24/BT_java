@@ -21,7 +21,7 @@ Hệ thống phù hợp cho việc chuẩn bị đề thi, kiểm tra chất lư
 
 | Thành phần | Công nghệ | Phiên bản |
 |---|---|---|
-| Ngôn ngữ | Java | 17 (LTS) |
+| Ngôn ngữ | Java | 21 (LTS) |
 | Build Tool | Apache Maven | 3.9+ |
 | Cơ sở dữ liệu | MySQL | 8.0 (Docker) |
 | AI API | Google Gemini | 2.0 Flash |
@@ -66,7 +66,7 @@ Hệ thống phù hợp cho việc chuẩn bị đề thi, kiểm tra chất lư
 
 | Yêu cầu | Mục đích | Kiểm tra |
 |---|---|---|
-| **JDK 17+** | Chạy ứng dụng Java | `java -version` |
+| **JDK 21+** | Chạy ứng dụng Java | `java -version` |
 | **Apache Maven 3.9+** | Build project | `mvn -version` |
 | **Docker + Docker Compose** | Chạy MySQL 8.0 | `docker --version` |
 | **g++ (MinGW trên Windows)** | Biên dịch code C++ nộp lên | `g++ --version` |
@@ -488,7 +488,7 @@ ai.model=gemini-2.0-flash
 ### Ứng dụng không khởi động
 
 **Kiểm tra:**
-1. Java version: `java -version` → phải là 17+
+1. Java version: `java -version` → phải là 21+
 2. JAR file tồn tại: `ls target/JudgeSystem-1.0-SNAPSHOT.jar`
 3. Chạy với log chi tiết: `java -jar target/JudgeSystem-1.0-SNAPSHOT.jar` và xem console output
 
@@ -521,6 +521,6 @@ ai.model=gemini-2.0-flash
 
 ## Tài liệu tham khảo
 
-- [INSTALL_GUIDE.md](INSTALL_GUIDE.md) — Hướng dẫn cài đặt chi tiết
+- [INSTALL.md](INSTALL.md) — Hướng dẫn cài đặt chi tiết
 - [USER_GUIDE.md](USER_GUIDE.md) — Hướng dẫn sử dụng từng chức năng
-- [TEST_REPORT.md](TEST_REPORT.md) — Báo cáo thử nghiệm đánh giá testcase AI
+- [EVALUATION_REPORT.md](EVALUATION_REPORT.md) — Báo cáo đánh giá kết quả kiểm thử

@@ -58,6 +58,19 @@ public class GeminiAIService implements AIService {
             String jsonResponse = callGeminiAPI(prompt, problem.getImagePath());
             response = parseAnalyzeResponse(jsonResponse);
         } catch (Exception e) {
+            // Retry once with truncated continuation prompt
+            try {
+                String retryPrompt = "Bạn vừa bị cắt JSON giữa chừng. Hãy hoàn thành JSON bị cắt với cùng cấu trúc. "
+                    + "Chỉ trả về phần còn thiếu của JSON (testcases, checker_needed, checker_script). "
+                    + "Không giải thích, chỉ trả về JSON.";
+                String jsonResponse = callGeminiAPI(retryPrompt, null);
+                AIResponse retryResponse = parseAnalyzeResponse(jsonResponse);
+                if (retryResponse.isSuccess()) {
+                    return retryResponse;
+                }
+            } catch (Exception retryEx) {
+                // ignore retry error, use original error
+            }
             response.setSuccess(false);
             response.setErrorMessage(e.getMessage());
         }
@@ -104,7 +117,8 @@ public class GeminiAIService implements AIService {
         sb.append("Loại kỳ thi: ").append(problem.getContestType()).append("\n");
         sb.append("Giới hạn thời gian: ").append(problem.getTimeLimit()).append("ms\n");
         sb.append("Giới hạn bộ nhớ: ").append(problem.getMemoryLimit()).append("MB\n");
-        sb.append("\nYêu cầu: Sinh ít nhất 5 testcase đa dạng (nhỏ, lớn, edge cases).");
+        sb.append("\nYêu cầu: Sinh 3-5 testcase đa dạng (nhỏ, lớn, edge cases). ");
+        sb.append("Trả về JSON hoàn chỉnh, KHÔNG dừng giữa chừng. Không giải thích quá dài.");
         return sb.toString();
     }
 
@@ -140,7 +154,7 @@ public class GeminiAIService implements AIService {
         // Request JSON config
         JsonObject generationConfig = new JsonObject();
         generationConfig.addProperty("temperature", 0.2);
-        generationConfig.addProperty("maxOutputTokens", 8192);
+        generationConfig.addProperty("maxOutputTokens", 32768);
         requestBody.add("generationConfig", generationConfig);
 
         RequestBody body = RequestBody.create(
