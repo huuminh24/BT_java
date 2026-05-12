@@ -9,7 +9,7 @@ Hệ thống chấm bài lập trình thi đấu tích hợp AI, cho phép nhậ
 Hệ thống **AI-Powered CP Judge** là một ứng dụng desktop được xây dựng nhằm hỗ trợ giảng viên và người dùng trong việc:
 
 - **Nhập đề thi** lập trình thi đấu (IOI, ICPC, Codeforces, AtCoder...) dưới dạng text hoặc ảnh chụp đề bài
-- **Phân tích đề bằng AI** — Sử dụng Google Gemini 2.0 Flash để đọc hiểu đề bài, sinh tự động các testcase đa dạng (small, large, edge, normal), checker script (Python), và code giải mẫu
+- **Phân tích đề bằng AI** — Sử dụng Google Gemini 2.5 Flash để đọc hiểu đề bài, sinh tự động các testcase đa dạng (small, large, edge, normal), checker script (Python), và code giải mẫu
 - **Chấm bài tự động** — Compile và thực thi code Java/C++/Python, so sánh output, phát hiện TLE/WA/RE/CE
 - **Xem kết quả trực quan** — Bảng kết quả với mã màu: AC (xanh), WA (đỏ), TLE (vàng), RE/CE (xám)
 
@@ -24,7 +24,7 @@ Hệ thống phù hợp cho việc chuẩn bị đề thi, kiểm tra chất lư
 | Ngôn ngữ | Java | 21 (LTS) |
 | Build Tool | Apache Maven | 3.9+ |
 | Cơ sở dữ liệu | MySQL | 8.0 (Docker) |
-| AI API | Google Gemini | 2.0 Flash |
+| AI API | Google Gemini | 2.5 Flash |
 | HTTP Client | OkHttp | 4.12.0 |
 | JSON Parser | Gson | 2.10.1 |
 | UI Framework | Java Swing + FlatLaf | 3.4.1 |
@@ -395,8 +395,8 @@ Mở file `src/main/resources/config.properties`:
 ```properties
 # AI API Configuration (Google Gemini)
 ai.api.key=AIzaSy...your-actual-api-key-here
-ai.api.url=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=
-ai.model=gemini-2.0-flash
+ai.api.url=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=
+ai.model=gemini-2.5-flash
 ```
 
 > **Lưu ý:** Phải build lại project (`mvn clean package`) sau khi thay đổi `config.properties` vì file này được đóng gói vào JAR.
@@ -420,9 +420,9 @@ ai.model=gemini-2.0-flash
 
 | Tham số | Giá trị |
 |---|---|
-| Model | `gemini-2.0-flash` |
+| Model | `gemini-2.5-flash` |
 | Temperature | 0.2 |
-| Max output tokens | 8192 |
+| Max output tokens | 32768 |
 | Timeout | Mặc định OkHttp |
 
 ---

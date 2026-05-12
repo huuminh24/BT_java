@@ -29,7 +29,7 @@ public class GeminiAIService implements AIService {
 
     static {
         Properties props = new Properties();
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
         String key = "";
         try (var input = GeminiAIService.class.getClassLoader().getResourceAsStream("config.properties")) {
             if (input != null) {
