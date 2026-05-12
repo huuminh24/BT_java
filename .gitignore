@@ -35,5 +35,8 @@ build/
 ### VS Code ###
 .vscode/
 
+### Windsurf / AI tools ###
+.windsurf/
+
 ### Mac OS ###
 .DS_Store
