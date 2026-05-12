@@ -1,13 +1,10 @@
 Báo cáo đánh giá & Kiểm thử
 
-
 1. Giới thiệu
 
-Đây là báo cáo kết quả thử nghiệm chương trình **AI-Powered CP Judge System** — một ứng dụng Java Swing giúp nhập đề thi lập trình, dùng AI phân tích đề và tự sinh testcase, sau đó chấm thử code mẫu.
+Đây là báo cáo kết quả thử nghiệm chương trình AI-Powered CP Judge System — một ứng dụng Java Swing giúp nhập đề thi lập trình, dùng AI phân tích đề và tự sinh testcase, sau đó chấm thử code mẫu.
 
-Em đã test thử trên 3 đề trong CSDL và chạy bộ test tự động `SystemTest.java` để kiểm tra các chức năng cơ bản.
-
-
+Em đã test thử trên 2 đề trong CSDL và chạy bộ test tự động `SystemTest.java` để kiểm tra các chức năng cơ bản.
 
 2. Môi trường chạy
 
@@ -34,83 +31,44 @@ Chạy class `SystemTest.java`, kết quả như sau:
 RESULT: 20 PASSED | 0 FAILED
 <img width="635" height="427" alt="Ảnh chụp màn hình 2026-05-12 093234" src="https://github.com/user-attachments/assets/4c99f024-c6a2-4f97-b7b3-66c3652a08e3" />
 
-
-
 4. Thử nghiệm trên các đề thực tế
 
-Em có tổng cộng 3 đề trong CSDL. Dưới đây là kết quả chấm thử từng đề.
+Em có tổng cộng 2 đề trong CSDL. Dưới đây là kết quả chấm thử từng đề.
 
-4.1. Đề "Alpha Country" (ID=11, 6 testcases)
+4.1. Đề "Alpha Country" 
 
+- Code đúng  <img width="1733" height="1117" alt="image" src="https://github.com/user-attachments/assets/494792db-379d-46ff-96fa-eeb4c0f5cabd" />
+- Code sai <img width="1733" height="1117" alt="image" src="https://github.com/user-attachments/assets/cba3ab7a-0441-4155-af80-7442c22a4197" />
 
- 
+4.2. Đề "Greatest Common Divisor" 
+- Code đúng :<img width="1733" height="1117" alt="image" src="https://github.com/user-attachments/assets/32c60281-0835-43c0-8681-b475e616d1d5" />
 
+-Code WA : <img width="1733" height="1117" alt="image" src="https://github.com/user-attachments/assets/675854fa-92b5-4393-89ee-5b7bd3811b5a" />
 
-### 4.2. Đề "Ocean Club" (ID=20, 5 testcases)
+-Code TLE : <img width="1733" height="1117" alt="image" src="https://github.com/user-attachments/assets/e9360103-354c-4168-94e0-a0e0f64f6ff0" />
 
-Đề mới em vừa nhập. Cho danh sách n người với địa chỉ nhà, truy vấn (ai, aj, k): tính số cách chọn k−1 địa chỉ là số nguyên tố nằm giữa ai và aj, kết quả modulo 2023.
+5. Thử nghiệm AI phân tích đề
 
-Em dùng AI phân tích đề. Ban đầu bị lỗi parse JSON do đề phức tạp, AI trả về chưa hết. Em đã sửa lại prompt và tăng max token, lần sau thì chạy được.
-
-- **Code đúng (sàng nguyên tố + prefix sum):** 5/5 AC, ~85ms/testcase.
-- **Code quên modulo 2023:** 2/5 WA, 3/5 AC.
-- **Code kiểm tra nguyên tố O(n) mỗi truy vấn:** 2/5 TLE với truy vấn lớn.
-
-Nhận xét: đề đòi hỏi tiền xử lý sàng nguyên tố để trả lời nhanh. AI sinh được testcase edge với k=1 (không cần chọn người trung gian).
-
-> **[CHỤP ẢNH]** Màn hình AIPanel đang phân tích đề Ocean Club, log hiển thị testcase sinh ra
-
-### 4.3. Đề "Greatest Common Divisor" (ID=21, 5 testcases)
-
-Cho dãy n số nguyên dương (1 ≤ n ≤ 100, 1 ≤ ai ≤ 70). Xét tất cả subset không rỗng, tính tổng GCD của mỗi subset.
-
-- **Code đúng (DP subset GCD):** 5/5 AC, ~110ms/testcase.
-- **Code bỏ qua subset chỉ có 1 phần tử:** 1/5 WA, 4/5 AC.
-- **Code brute force 2ⁿ subsets:** 3/5 TLE với n ≥ 20. Vì 2²⁰ ≈ 1 triệu subset, chạy quá lâu.
-
-Nhận xét: do ai ≤ 70 nên DP theo giá trị GCD khả thi. Brute force không qua được testcase n lớn.
-
----
-
-## 5. Thử nghiệm AI phân tích đề
-
-Em thử dùng AI phân tích 2 đề: "Ocean Club" và "Greatest Common Divisor".
+Em thử dùng AI phân tích 2 đề: "Alpha country" và "Greatest Common Divisor".
 
 Kết quả:
 - AI đọc hiểu đề và trả về mô tả ngắn gọn đúng nghĩa.
-- Sinh được 5 testcase gồm small, large, edge.
+- Sinh được 5 testcase gồm small, normal , edge.
 - Có thể tick chọn "Tự động sinh code AC" thì AI viết code Java mẫu.
 - Có thể hủy tác vụ AI bằng cách nhấn lại nút, không bị treo UI.
 
-> **[CHỤP ẢNH]** Màn hình AIPanel sau khi phân tích xong, bảng testcase hiển thị 5 dòng
+<img width="1733" height="1117" alt="image" src="https://github.com/user-attachments/assets/a481f0fc-685d-4b2e-8bb2-4eb365845416" />
 
----
-
-## 6. Một số lỗi đã gặp và cách sửa
-
-| STT | Lỗi gặp phải | Cách sửa |
-|-----|-------------|----------|
-| 1 | Dashboard không cập nhật số đề sau khi xóa | Thêm `dashboardPanel.refreshStats()` trong `MainFrame.showPanel()` khi quay về Dashboard |
-| 2 | C++ chạy bị RE trên Windows | `ProcessBuilder("solution.exe")` tìm trong PATH → sửa thành `workDir.resolve("solution.exe")` |
-| 3 | Nút Back ở Dashboard bị NullPointerException | Do khai báo `JButton backBtn` thành biến cục bộ → sửa thành gán vào field của class |
-| 4 | UI treo khi gọi API AI | Thêm timeout cho OkHttpClient (30s) |
-| 5 | Xóa đề thì file ảnh/testcase còn sót lại | Trong `deleteProblem`, thêm xóa file trước khi xóa record DB |
-| 6 | Bảng kết quả khó nhìn | Thêm màu nền xen kẽ giữa các hàng |
-
----
-
-## 7. Kết luận
+6. Kết luận
 
 Sau quá trình thử nghiệm, chương trình chạy ổn định với các chức năng chính:
 - Nhập đề và lưu vào CSDL: hoạt động tốt.
-- AI phân tích đề và sinh testcase: hoạt động tốt, cần chỉnh prompt với đề phức tạp.
+- AI phân tích đề và sinh testcase: hoạt động chưa được tốt lắm , test case do AI sinh ra dễ bị sai  , cần chỉnh prompt với đề phức tạp.
 - Chấm thử Java/C++/Python: chạy đúng, phát hiện AC/WA/TLE chính xác.
 - UI hiển thị rõ ràng, có màu phân biệt status.
 
 SystemTest đạt 20/20 passed. Em đánh giá chương trình đã đáp ứng được yêu cầu đề bài.
+ Màn hình Dashboard hiển thị tổng quan (3 đề, các testcase, submission)
 
-> **[CHỤP ẢNH]** Màn hình Dashboard hiển thị tổng quan (3 đề, các testcase, submission)
+<img width="1733" height="1117" alt="image" src="https://github.com/user-attachments/assets/1096621a-ae06-4e40-b4cc-3986021e6c04" />
 
----
-
-*Các ảnh chụp màn hình minh họa được đính kèm trong thư mục `screenshots/` (nếu có).*
