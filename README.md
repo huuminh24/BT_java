@@ -521,6 +521,7 @@ ai.model=gemini-2.0-flash
 
 ## Tài liệu tham khảo
 
-- [INSTALL_GUIDE.md](INSTALL_GUIDE.md) — Hướng dẫn cài đặt chi tiết
-- [USER_GUIDE.md](USER_GUIDE.md) — Hướng dẫn sử dụng từng chức năng
-- [TEST_REPORT.md](TEST_REPORT.md) — Báo cáo thử nghiệm đánh giá testcase AI
+- [INSTALL.md](INSTALL.md) — Hướng dẫn cài đặt chi tiết
+- [DEMO_GUIDE.md](DEMO_GUIDE.md) — Hướng dẫn demo cho giảng viên
+- [BAO_CAO.md](BAO_CAO.md) — Báo cáo đánh giá chất lượng testcase AI
+- [EVALUATION_REPORT.md](EVALUATION_REPORT.md) — Báo cáo kiểm thử hệ thống (System Test)

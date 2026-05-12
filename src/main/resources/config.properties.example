@@ -5,9 +5,10 @@ db.password=123
 db.driver=com.mysql.cj.jdbc.Driver
 
 # AI API Configuration (Google Gemini)
-ai.api.key=AIzaSyC-s8WvolKRhAxX2AinnOG4B8YdfTPpaUA
-ai.api.url=https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=
-ai.model=gemini-flash-latest
+# Get your API key from: https://aistudio.google.com/app/apikey
+ai.api.key=YOUR_GEMINI_API_KEY_HERE
+ai.api.url=https://generativelanguage.googleapis.com/v1beta/models/
+ai.model=gemini-2.5-flash
 
 # File Storage
 file.root.dir=./JudgeSystemData

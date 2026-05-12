@@ -37,3 +37,8 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Security - Sensitive Configuration ###
+src/main/resources/config.properties
+config.properties
+*.properties.new
