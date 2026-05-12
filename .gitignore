@@ -42,3 +42,26 @@ build/
 src/main/resources/config.properties
 config.properties
 *.properties.new
+
+### AI Agent & Skills (Internal) ###
+.kilo/
+.agents/
+skills-lock.json
+
+### Test & Debug Scripts (Optional) -*-
+check_*.py
+check_*.bat
+debug_*.py
+reset_*.bat
+show_*.bat
+import_db.bat
+delete_sample.bat
+git_log_output.txt
+
+### Unused Documentation (Keep only essential) -*-
+INSTALL_GUIDE.md
+MANUAL_TEST_GUIDE.md
+OPTIMIZATION_PLAN.md
+ORCHESTRATOR_PLAN.md
+TEST_REPORT.md
+USER_GUIDE.md
