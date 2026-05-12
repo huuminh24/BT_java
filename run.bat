@@ -1,0 +1,6 @@
+@echo off
+echo Building...
+mvn clean package -q -f "%~dp0pom.xml"
+echo Starting app...
+java -jar "%~dp0target\JudgeSystem-1.0-SNAPSHOT.jar"
+pause
