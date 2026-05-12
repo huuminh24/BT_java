@@ -38,7 +38,7 @@ java -jar target/JudgeSystem-1.0-SNAPSHOT.jar
 |------|----------|
 | [INSTALL.md](INSTALL.md) | Hướng dẫn cài đặt chi tiết (JDK, Maven, Docker, g++, Python) |
 | [USER_GUIDE.md](USER_GUIDE.md) | Hướng dẫn sử dụng từng chức năng |
-| [EVALUATION_REPORT.md](EVALUATION_REPORT.md) | Báo cáo đánh giá 6 đề trong quá trình thử nghiệm |
+| [EVALUATION_REPORT.md](EVALUATION_REPORT.md) | Báo cáo đánh giá 3 đề trong quá trình thử nghiệm |
 
 ## Giao diện
 

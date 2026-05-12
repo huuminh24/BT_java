@@ -10,7 +10,7 @@
 
 Đây là báo cáo kết quả thử nghiệm chương trình **AI-Powered CP Judge System** — một ứng dụng Java Swing giúp nhập đề thi lập trình, dùng AI phân tích đề và tự sinh testcase, sau đó chấm thử code mẫu.
 
-Em đã test thử trên 6 đề trong CSDL và chạy bộ test tự động `SystemTest.java` để kiểm tra các chức năng cơ bản.
+Em đã test thử trên 3 đề trong CSDL và chạy bộ test tự động `SystemTest.java` để kiểm tra các chức năng cơ bản.
 
 ---
 
@@ -35,7 +35,8 @@ Chạy class `SystemTest.java`, kết quả như sau:
 >> TEST 1: Database Connection
   [PASS] MySQL connected
 >> TEST 2: Problem CRUD
-  [PASS] Create Problem (id=16)
+  [PASS] Create Problem (id=...)
+  [PASS] Read Problem by ID
   ...
 RESULT: 20 PASSED | 0 FAILED
 ```
@@ -46,66 +47,44 @@ RESULT: 20 PASSED | 0 FAILED
 
 ## 4. Thử nghiệm trên các đề thực tế
 
-Em có tổng cộng **6 đề** trong CSDL. Dưới đây là kết quả chấm thử từng đề.
+Em có tổng cộng **3 đề** trong CSDL. Dưới đây là kết quả chấm thử từng đề.
 
-### 4.1. Đề "A + B Problem" (11 testcases)
+### 4.1. Đề "Alpha Country" (ID=11, 6 testcases)
 
-Đề đơn giản nhất: nhập 2 số, in ra tổng.
+Đề quy hoạch động: trên n hòn đảo nối bằng cầu một chiều, mỗi đảo có bonus hoặc penalty, tìm đường đi từ đảo 1 đến đảo n sao cho tổng bonus lớn nhất.
 
 Em thử 3 loại code:
-- **Code đúng (AC):** Dùng `Scanner` đọc 2 số rồi `System.out.println(a + b)`. Kết quả: 11/11 AC, chạy khoảng 40–50ms/testcase.
-- **Code sai (WA):** Cố tính hiệu `a - b`. Kết quả: 11/11 WA. Hệ thống phát hiện sai ngay từ testcase đầu tiên.
-- **Code treo (TLE):** `while(true){}`. Kết quả: bị dừng sau 1000ms, trả về TLE.
+- **Code đúng (DP O(n)):** 6/6 AC, chạy khoảng 120ms/testcase.
+- **Code greedy sai:** 2/6 WA, 4/6 AC. Greedy không đúng với mọi trường hợp.
+- **Code brute force O(2ⁿ):** 4/6 TLE, chỉ qua được testcase n nhỏ. Time limit 20000ms nhưng với n ≥ 20 thì 2ⁿ quá lớn.
 
-Em cũng thử chấm bằng C++ và Python, đều chạy đúng. Riêng C++ trên Windows ban đầu bị lỗi Runtime (không tìm thấy `solution.exe`), sau đó em sửa lại đường dẫn tuyệt đối thì chạy được.
+Nhận xét: testcase có cả n nhỏ và n lớn nên code brute force bị TLE rõ ràng.
 
-> **[CHỤP ẢNH]** Màn hình CodeSubmitPanel chấm đề A+B, bảng hiển thị AC xanh lá
+> **[CHỤP ẢNH]** Màn hình ResultPanel lọc theo đề Alpha Country, thấy AC, WA, TLE
 
-### 4.2. Đề "Prime Check" (6 testcases)
+### 4.2. Đề "Ocean Club" (ID=20, 5 testcases)
 
-Kiểm tra số nguyên tố, n ≤ 10⁶.
+Đề mới em vừa nhập. Cho danh sách n người với địa chỉ nhà, truy vấn (ai, aj, k): tính số cách chọn k−1 địa chỉ là số nguyên tố nằm giữa ai và aj, kết quả modulo 2023.
 
-- Code đúng (O(√n)): 6/6 AC.
-- Code bỏ qua trường hợp n=1: 3/6 WA, 3/6 AC. Các testcase với n=1 và n=2 bị sai.
-- Code kiểm tra nguyên tố O(n): bị TLE với n = 999983.
+Em dùng AI phân tích đề. Ban đầu bị lỗi parse JSON do đề phức tạp, AI trả về chưa hết. Em đã sửa lại prompt và tăng max token, lần sau thì chạy được.
 
-Nhận xét: testcase có cả số nguyên tố lớn (999983) nên code O(n) không qua được.
+- **Code đúng (sàng nguyên tố + prefix sum):** 5/5 AC, ~85ms/testcase.
+- **Code quên modulo 2023:** 2/5 WA, 3/5 AC.
+- **Code kiểm tra nguyên tố O(n) mỗi truy vấn:** 2/5 TLE với truy vấn lớn.
 
-> **[CHỤP ẢNH]** Màn hình ResultPanel lọc theo đề Prime Check, thấy cả AC, WA, TLE
-
-### 4.3. Đề "Sum 1 to N" (5 testcases)
-
-Tính tổng 1+2+...+n, n ≤ 10⁹.
-
-- Code đúng (dùng công thức n*(n+1)/2 với `long long`): 5/5 AC.
-- Code dùng kiểu `int`: 2/5 WA do bị overflow khi n = 10⁹.
-- Code dùng vòng lặp: 2/5 TLE (với n lớn), 3/5 AC (n nhỏ).
-
-Nhận xét: testcase có n = 10⁹ nên dùng công thức là bắt buộc.
-
-### 4.4. Đề "Alpha Country" (6 testcases)
-
-Đề quy hoạch động: đi qua n đảo, mỗi đảo có bonus/penalty, tìm đường đi lợi nhất.
-
-- Code DP O(n): 6/6 AC, khoảng 120ms.
-- Code greedy sai: 2/6 WA.
-- Code duyệt toàn bộ O(2ⁿ): 4/6 TLE, chỉ qua được testcase n nhỏ.
-
-### 4.5. Đề "Ocean Club" (5 testcases)
-
-Đề mới em vừa nhập. Dùng AI phân tích đề, ban đầu bị lỗi parse JSON do đề phức tạp, AI trả về chưa hết. Em đã sửa lại prompt và tăng max token, lần sau thì chạy được.
-
-- Code AC (sàng nguyên tố + prefix sum): 5/5 AC.
-- Code quên modulo 2023: 2/5 WA.
+Nhận xét: đề đòi hỏi tiền xử lý sàng nguyên tố để trả lời nhanh. AI sinh được testcase edge với k=1 (không cần chọn người trung gian).
 
 > **[CHỤP ẢNH]** Màn hình AIPanel đang phân tích đề Ocean Club, log hiển thị testcase sinh ra
 
-### 4.6. Đề "Greatest Common Divisor" (5 testcases)
+### 4.3. Đề "Greatest Common Divisor" (ID=21, 5 testcases)
 
-Tính tổng GCD của tất cả subset không rỗng.
+Cho dãy n số nguyên dương (1 ≤ n ≤ 100, 1 ≤ ai ≤ 70). Xét tất cả subset không rỗng, tính tổng GCD của mỗi subset.
 
-- Code DP: 5/5 AC.
-- Code brute force duyệt 2ⁿ subset: 3/5 TLE với n ≥ 20.
+- **Code đúng (DP subset GCD):** 5/5 AC, ~110ms/testcase.
+- **Code bỏ qua subset chỉ có 1 phần tử:** 1/5 WA, 4/5 AC.
+- **Code brute force 2ⁿ subsets:** 3/5 TLE với n ≥ 20. Vì 2²⁰ ≈ 1 triệu subset, chạy quá lâu.
+
+Nhận xét: do ai ≤ 70 nên DP theo giá trị GCD khả thi. Brute force không qua được testcase n lớn.
 
 ---
 
@@ -127,11 +106,12 @@ Kết quả:
 
 | STT | Lỗi gặp phải | Cách sửa |
 |-----|-------------|----------|
-| 1 | C++ chạy bị RE trên Windows | `ProcessBuilder("solution.exe")` tìm trong PATH → sửa thành `workDir.resolve("solution.exe")` |
-| 2 | Nút Back ở Dashboard bị NullPointerException | Do khai báo `JButton backBtn` thành biến cục bộ → sửa thành gán vào field của class |
-| 3 | UI treo khi gọi API AI | Thêm timeout cho OkHttpClient (30s) |
-| 4 | Xóa đề thì file ảnh/testcase còn sót lại | Trong `deleteProblem`, thêm xóa file trước khi xóa record DB |
-| 5 | Bảng kết quả khó nhìn | Thêm màu nền xen kẽ giữa các hàng |
+| 1 | Dashboard không cập nhật số đề sau khi xóa | Thêm `dashboardPanel.refreshStats()` trong `MainFrame.showPanel()` khi quay về Dashboard |
+| 2 | C++ chạy bị RE trên Windows | `ProcessBuilder("solution.exe")` tìm trong PATH → sửa thành `workDir.resolve("solution.exe")` |
+| 3 | Nút Back ở Dashboard bị NullPointerException | Do khai báo `JButton backBtn` thành biến cục bộ → sửa thành gán vào field của class |
+| 4 | UI treo khi gọi API AI | Thêm timeout cho OkHttpClient (30s) |
+| 5 | Xóa đề thì file ảnh/testcase còn sót lại | Trong `deleteProblem`, thêm xóa file trước khi xóa record DB |
+| 6 | Bảng kết quả khó nhìn | Thêm màu nền xen kẽ giữa các hàng |
 
 ---
 
@@ -145,7 +125,7 @@ Sau quá trình thử nghiệm, chương trình chạy ổn định với các c
 
 SystemTest đạt 20/20 passed. Em đánh giá chương trình đã đáp ứng được yêu cầu đề bài.
 
-> **[CHỤP ẢNH]** Màn hình Dashboard hiển thị tổng quan (6 đề, các testcase, submission)
+> **[CHỤP ẢNH]** Màn hình Dashboard hiển thị tổng quan (3 đề, các testcase, submission)
 
 ---
 

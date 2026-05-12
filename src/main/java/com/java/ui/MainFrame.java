@@ -8,6 +8,7 @@ public class MainFrame extends JFrame {
     private CardLayout cardLayout;
     private JPanel mainPanel;
     private JButton backBtn;
+    private DashboardPanel dashboardPanel;
     private ProblemService problemService = new ProblemService();
 
     public MainFrame() {
@@ -52,7 +53,8 @@ public class MainFrame extends JFrame {
         mainPanel.setBackground(AppTheme.BG_DARK);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 32, 32, 32));
 
-        mainPanel.add(new DashboardPanel(this, problemService), "DASHBOARD");
+        dashboardPanel = new DashboardPanel(this, problemService);
+        mainPanel.add(dashboardPanel, "DASHBOARD");
         mainPanel.add(new ProblemEntryPanel(problemService), "PROBLEM_ENTRY");
         mainPanel.add(new AIPanel(problemService), "AI_PANEL");
         mainPanel.add(new CodeSubmitPanel(problemService), "CODE_SUBMIT");
@@ -67,5 +69,8 @@ public class MainFrame extends JFrame {
     public void showPanel(String name) {
         backBtn.setVisible(!"DASHBOARD".equals(name));
         cardLayout.show(mainPanel, name);
+        if ("DASHBOARD".equals(name) && dashboardPanel != null) {
+            dashboardPanel.refreshStats();
+        }
     }
 }
