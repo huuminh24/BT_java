@@ -1,20 +1,15 @@
-# Báo cáo đánh giá & Kiểm thử
+Báo cáo đánh giá & Kiểm thử
 
-**Người thực hiện:** [Điền tên của bạn vào đây]  
-**Môn học:** Lập trình Java — Bài tập lớn  
-**Ngày nộp:** 12/05/2026
 
----
-
-## 1. Giới thiệu
+1. Giới thiệu
 
 Đây là báo cáo kết quả thử nghiệm chương trình **AI-Powered CP Judge System** — một ứng dụng Java Swing giúp nhập đề thi lập trình, dùng AI phân tích đề và tự sinh testcase, sau đó chấm thử code mẫu.
 
 Em đã test thử trên 3 đề trong CSDL và chạy bộ test tự động `SystemTest.java` để kiểm tra các chức năng cơ bản.
 
----
 
-## 2. Môi trường chạy
+
+2. Môi trường chạy
 
 Em chạy trên laptop cá nhân:
 - Windows 11
@@ -24,13 +19,11 @@ Em chạy trên laptop cá nhân:
 - MinGW-w64 (g++) để compile C++
 - Python 3.12
 
----
 
-## 3. Kết quả test tự động (SystemTest)
+3. Kết quả test tự động (SystemTest)
 
 Chạy class `SystemTest.java`, kết quả như sau:
 
-```
 === AI-Powered CP Judge System - System Test ===
 >> TEST 1: Database Connection
   [PASS] MySQL connected
@@ -39,28 +32,19 @@ Chạy class `SystemTest.java`, kết quả như sau:
   [PASS] Read Problem by ID
   ...
 RESULT: 20 PASSED | 0 FAILED
-```
+<img width="635" height="427" alt="Ảnh chụp màn hình 2026-05-12 093234" src="https://github.com/user-attachments/assets/4c99f024-c6a2-4f97-b7b3-66c3652a08e3" />
 
-> **[CHỤP ẢNH]** Màn hình terminal chạy SystemTest hiển thị "20 PASSED | 0 FAILED"
 
----
 
-## 4. Thử nghiệm trên các đề thực tế
+4. Thử nghiệm trên các đề thực tế
 
-Em có tổng cộng **3 đề** trong CSDL. Dưới đây là kết quả chấm thử từng đề.
+Em có tổng cộng 3 đề trong CSDL. Dưới đây là kết quả chấm thử từng đề.
 
-### 4.1. Đề "Alpha Country" (ID=11, 6 testcases)
+4.1. Đề "Alpha Country" (ID=11, 6 testcases)
 
-Đề quy hoạch động: trên n hòn đảo nối bằng cầu một chiều, mỗi đảo có bonus hoặc penalty, tìm đường đi từ đảo 1 đến đảo n sao cho tổng bonus lớn nhất.
 
-Em thử 3 loại code:
-- **Code đúng (DP O(n)):** 6/6 AC, chạy khoảng 120ms/testcase.
-- **Code greedy sai:** 2/6 WA, 4/6 AC. Greedy không đúng với mọi trường hợp.
-- **Code brute force O(2ⁿ):** 4/6 TLE, chỉ qua được testcase n nhỏ. Time limit 20000ms nhưng với n ≥ 20 thì 2ⁿ quá lớn.
+ 
 
-Nhận xét: testcase có cả n nhỏ và n lớn nên code brute force bị TLE rõ ràng.
-
-> **[CHỤP ẢNH]** Màn hình ResultPanel lọc theo đề Alpha Country, thấy AC, WA, TLE
 
 ### 4.2. Đề "Ocean Club" (ID=20, 5 testcases)
 
