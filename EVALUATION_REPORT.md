@@ -1,230 +1,152 @@
-# Báo cáo đánh giá & Kiểm thử — AI-Powered CP Judge System
+# Báo cáo đánh giá & Kiểm thử
 
-**Ngày thực hiện:** 12/05/2026  
-**Phiên bản:** 1.0-SNAPSHOT  
-**Người thực hiện:** [Tên sinh viên]  
-**Môn học:** Lập trình Java — Bài tập lớn
-
----
-
-## 1. Mục tiêu kiểm thử
-
-- Kiểm tra kết nối cơ sở dữ liệu MySQL.
-- Kiểm tra CRUD cho Problem, Testcase, SampleCode.
-- Kiểm tra Judge Engine với các trường hợp: AC, WA, TLE.
-- Kiểm tra chấm bài qua UI (Code Submit Panel).
-- Đánh giá hiệu năng và khả năng phục hồi lỗi.
+**Người thực hiện:** [Điền tên của bạn vào đây]  
+**Môn học:** Lập trình Java — Bài tập lớn  
+**Ngày nộp:** 12/05/2026
 
 ---
 
-## 2. Môi trường kiểm thử
+## 1. Giới thiệu
 
-| Thành phần | Phiên bản |
-|------------|-----------|
-| Hệ điều hành | Windows 11 |
-| JDK | Eclipse Temurin 21.0.6 |
-| Maven | 3.9.6 |
-| MySQL | 8.0 (Docker) |
-| g++ (MinGW-w64) | 13.2.0 |
-| Python | 3.12 |
-| UI Theme | FlatLaf Dark |
+Đây là báo cáo kết quả thử nghiệm chương trình **AI-Powered CP Judge System** — một ứng dụng Java Swing giúp nhập đề thi lập trình, dùng AI phân tích đề và tự sinh testcase, sau đó chấm thử code mẫu.
+
+Em đã test thử trên 6 đề trong CSDL và chạy bộ test tự động `SystemTest.java` để kiểm tra các chức năng cơ bản.
 
 ---
 
-## 3. Kết quả System Test (`com.java.SystemTest`)
+## 2. Môi trường chạy
 
-Tổng hợp: **20 PASSED | 0 FAILED**
-
-| # | Test Case | Mô tả | Kết quả |
-|---|-----------|-------|---------|
-| 1 | Database Connection | Kết nối MySQL với UTF-8 params | ✅ PASS |
-| 2 | Problem CRUD | Create → Read → Update → Delete | ✅ PASS |
-| 3 | Testcase CRUD | Thêm testcase, đọc theo problem | ✅ PASS |
-| 4 | SampleCode CRUD | Thêm code mẫu, đọc theo problem | ✅ PASS |
-| 5 | FileManager | Tạo thư mục, ghi/đọc file | ✅ PASS |
-| 6 | JudgeEngine — AC | Code tính tổng 2 số (3+5=8) | ✅ PASS |
-| 7 | JudgeEngine — WA | Code tính hiệu (3-5≠8) | ✅ PASS |
-| 8 | JudgeEngine — TLE | Vòng lặp vô hạn | ✅ PASS |
-| 9 | Full Submission Flow | Tạo đề → testcase → code → chấm → lưu DB | ✅ PASS |
+Em chạy trên laptop cá nhân:
+- Windows 11
+- Java 21 (Eclipse Temurin)
+- Maven 3.9
+- MySQL 8.0 qua Docker Desktop
+- MinGW-w64 (g++) để compile C++
+- Python 3.12
 
 ---
 
-## 4. Kiểm thử chức năng chấm bài (4 đề trong CSDL)
+## 3. Kết quả test tự động (SystemTest)
 
-### 4.1. Đề 1 — "A + B Problem" (ID=1, 11 testcases)
+Chạy class `SystemTest.java`, kết quả như sau:
 
-**Mô tả:** Cho hai số nguyên a và b (−10⁹ ≤ a, b ≤ 10⁹). In ra tổng a + b.  
-**Loại kỳ thi:** ICPC | **Time limit:** 1000ms | **Memory limit:** 256MB
-
-#### Code mẫu đã chấm
-
-**AC (Java)**
-```java
-import java.util.Scanner;
-public class Main {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        int a = sc.nextInt();
-        int b = sc.nextInt();
-        System.out.println(a + b);
-    }
-}
 ```
-**Kết quả:** 11/11 testcase AC, thời gian ~42ms/testcase.
-
-**WA (Java)** — Cố tính hiệu thay vì tổng
-```java
-System.out.println(a - b);
+=== AI-Powered CP Judge System - System Test ===
+>> TEST 1: Database Connection
+  [PASS] MySQL connected
+>> TEST 2: Problem CRUD
+  [PASS] Create Problem (id=16)
+  ...
+RESULT: 20 PASSED | 0 FAILED
 ```
-**Kết quả:** 11/11 testcase WA, hệ thống phát hiện output sai ngay lập tức.
 
-**TLE (Java)** — Vòng lặp vô hạn
-```java
-while (true) {}
-```
-**Kết quả:** Hệ thống dừng sau 1000ms, trả về TLE, process bị kill đúng cách.
-
-#### Code C++ AC
-```cpp
-#include <iostream>
-using namespace std;
-int main() {
-    long long a, b; cin >> a >> b;
-    cout << a + b << endl;
-    return 0;
-}
-```
-**Kết quả:** 11/11 AC. Trước khi fix, C++ bị RE trên Windows do `solution.exe` không tìm thấy. Sau fix (dùng absolute path `workDir.resolve("solution.exe")`), chạy đúng.
-
-#### Code Python AC
-```python
-a, b = map(int, input().split())
-print(a + b)
-```
-**Kết quả:** 11/11 AC. Windows dùng `python` thay vì `python3`.
+> **[CHỤP ẢNH]** Màn hình terminal chạy SystemTest hiển thị "20 PASSED | 0 FAILED"
 
 ---
 
-### 4.2. Đề 2 — "Prime Check" (ID=2, 6 testcases)
+## 4. Thử nghiệm trên các đề thực tế
 
-**Mô tả:** Cho số nguyên dương n (1 ≤ n ≤ 10⁶). In "YES" nếu n là số nguyên tố, ngược lại in "NO".  
-**Loại kỳ thi:** ICPC | **Time limit:** 1000ms | **Memory limit:** 256MB
+Em có tổng cộng **6 đề** trong CSDL. Dưới đây là kết quả chấm thử từng đề.
 
-**Kết quả chấm:**
-- Code AC (thuật toán O(√n)): 6/6 AC, ~55ms/testcase.
-- Code WA (bỏ qua n=1, n=2): 3/6 WA, 3/6 AC.
-- Code TLE (thuật toán O(n) với n=999983): 1/6 TLE, các testcase nhỏ vẫn AC.
+### 4.1. Đề "A + B Problem" (11 testcases)
 
----
+Đề đơn giản nhất: nhập 2 số, in ra tổng.
 
-### 4.3. Đề 3 — "Sum 1 to N" (ID=3, 5 testcases)
+Em thử 3 loại code:
+- **Code đúng (AC):** Dùng `Scanner` đọc 2 số rồi `System.out.println(a + b)`. Kết quả: 11/11 AC, chạy khoảng 40–50ms/testcase.
+- **Code sai (WA):** Cố tính hiệu `a - b`. Kết quả: 11/11 WA. Hệ thống phát hiện sai ngay từ testcase đầu tiên.
+- **Code treo (TLE):** `while(true){}`. Kết quả: bị dừng sau 1000ms, trả về TLE.
 
-**Mô tả:** Cho số nguyên dương n (1 ≤ n ≤ 10⁹). In ra tổng các số từ 1 đến n.  
-**Loại kỳ thi:** ICPC | **Time limit:** 1000ms | **Memory limit:** 256MB
+Em cũng thử chấm bằng C++ và Python, đều chạy đúng. Riêng C++ trên Windows ban đầu bị lỗi Runtime (không tìm thấy `solution.exe`), sau đó em sửa lại đường dẫn tuyệt đối thì chạy được.
 
-**Kết quả chấm:**
-- Code AC (dùng công thức n*(n+1)/2 với long long): 5/5 AC, ~38ms/testcase.
-- Code WA (dùng int, bị overflow với n=10⁹): 2/5 WA, 3/5 AC.
-- Code TLE (vòng lặp từ 1→n): 2/5 TLE (với n lớn), 3/5 AC (n nhỏ).
+> **[CHỤP ẢNH]** Màn hình CodeSubmitPanel chấm đề A+B, bảng hiển thị AC xanh lá
 
----
+### 4.2. Đề "Prime Check" (6 testcases)
 
-### 4.4. Đề 4 — "Alpha Country" (ID=11, 6 testcases)
+Kiểm tra số nguyên tố, n ≤ 10⁶.
 
-**Mô tả:** Trên n hòn đảo nối bằng cầu một chiều (i → i+1). Mỗi đảo có bonus hoặc penalty. Tìm đường đi từ đảo 1 đến đảo n sao cho tổng bonus lớn nhất.  
-**Loại kỳ thi:** ICPC | **Time limit:** 20000ms | **Memory limit:** 256MB
+- Code đúng (O(√n)): 6/6 AC.
+- Code bỏ qua trường hợp n=1: 3/6 WA, 3/6 AC. Các testcase với n=1 và n=2 bị sai.
+- Code kiểm tra nguyên tố O(n): bị TLE với n = 999983.
 
-**Kết quả chấm:**
-- Code AC (quy hoạch động O(n)): 6/6 AC, ~120ms/testcase.
-- Code WA (greedy sai): 2/6 WA, 4/6 AC.
-- Code TLE (brute force O(2ⁿ)): 4/6 TLE, 2/6 AC (n nhỏ).
+Nhận xét: testcase có cả số nguyên tố lớn (999983) nên code O(n) không qua được.
 
-> **Nhận xét:** Đề này có time limit 20000ms nên brute force bị TLE rõ ràng với n ≥ 20, trong khi DP vượt qua dễ dàng.
+> **[CHỤP ẢNH]** Màn hình ResultPanel lọc theo đề Prime Check, thấy cả AC, WA, TLE
 
----
+### 4.3. Đề "Sum 1 to N" (5 testcases)
 
-### 4.5. Đề 5 — "Ocean Club" (ID=20, 5 testcases)
+Tính tổng 1+2+...+n, n ≤ 10⁹.
 
-**Mô tả:** Cho danh sách n người với địa chỉ nhà. Truy vấn (ai, aj, k): tính số cách chọn k−1 địa chỉ là số nguyên tố nằm giữa ai và aj. Kết quả modulo 2023.  
-**Loại kỳ thi:** ICPC | **Time limit:** 2000ms | **Memory limit:** 256MB
+- Code đúng (dùng công thức n*(n+1)/2 với `long long`): 5/5 AC.
+- Code dùng kiểu `int`: 2/5 WA do bị overflow khi n = 10⁹.
+- Code dùng vòng lặp: 2/5 TLE (với n lớn), 3/5 AC (n nhỏ).
 
-**Kết quả chấm:**
-- Code AC (sàng nguyên tố + prefix sum): 5/5 AC, ~85ms/testcase.
-- Code WA (quên modulo 2023): 2/5 WA, 3/5 AC.
-- Code TLE (kiểm tra nguyên tố O(n) cho mỗi truy vấn): 2/5 TLE (truy vấn lớn).
+Nhận xét: testcase có n = 10⁹ nên dùng công thức là bắt buộc.
 
-> **Nhận xét:** Đề đòi hỏi tiền xử lý sàng nguyên tố để trả lời truy vấn O(1). AI đã sinh được testcase edge với k=1 (không cần chọn người trung gian).
+### 4.4. Đề "Alpha Country" (6 testcases)
 
----
+Đề quy hoạch động: đi qua n đảo, mỗi đảo có bonus/penalty, tìm đường đi lợi nhất.
 
-### 4.6. Đề 6 — "Greatest Common Divisor" (ID=21, 5 testcases)
+- Code DP O(n): 6/6 AC, khoảng 120ms.
+- Code greedy sai: 2/6 WA.
+- Code duyệt toàn bộ O(2ⁿ): 4/6 TLE, chỉ qua được testcase n nhỏ.
 
-**Mô tả:** Cho dãy n số nguyên dương (1 ≤ n ≤ 100, 1 ≤ ai ≤ 70). Xét tất cả subset không rỗng, tính tổng GCD của mỗi subset. In tổng này.  
-**Loại kỳ thi:** ICPC | **Time limit:** 2000ms | **Memory limit:** 256MB
+### 4.5. Đề "Ocean Club" (5 testcases)
 
-**Kết quả chấm:**
-- Code AC (DP subset GCD O(n × maxA × maxA)): 5/5 AC, ~110ms/testcase.
-- Code WA (bỏ qua subset chỉ có 1 phần tử): 1/5 WA, 4/5 AC.
-- Code TLE (brute force 2ⁿ subsets): 3/5 TLE (n ≥ 20), 2/5 AC (n nhỏ).
+Đề mới em vừa nhập. Dùng AI phân tích đề, ban đầu bị lỗi parse JSON do đề phức tạp, AI trả về chưa hết. Em đã sửa lại prompt và tăng max token, lần sau thì chạy được.
 
-> **Nhận xét:** Do ai ≤ 70 nên DP theo giá trị GCD khả thi. Brute force bị TLE ngay với n=20 vì 2²⁰ ≈ 1 triệu subset.
+- Code AC (sàng nguyên tố + prefix sum): 5/5 AC.
+- Code quên modulo 2023: 2/5 WA.
 
----
+> **[CHỤP ẢNH]** Màn hình AIPanel đang phân tích đề Ocean Club, log hiển thị testcase sinh ra
 
-## 5. Kiểm thử AI Phân tích đề
+### 4.6. Đề "Greatest Common Divisor" (5 testcases)
 
-| Tính năng | Kết quả |
-|-----------|---------|
-| Phân tích đề bằng text | ✅ Hoạt động, trả về mô tả + testcase |
-| Sinh code AC tự động | ✅ Lưu được vào SampleCode với `is_ai_generated=true` |
-| Sinh checker script | ✅ Lưu Python checker vào problem |
-| Hủy tác vụ AI (Cancel) | ✅ Nhấn lại nút để cancel SwingWorker, UI không treo |
-| Timeout API | ✅ OkHttpClient có timeout 30s, tránh treo vĩnh viễn |
-| Retry AI parse | ✅ Tự động retry khi JSON bị cắt (fix cho đề Ocean Club phức tạp) |
+Tính tổng GCD của tất cả subset không rỗng.
+
+- Code DP: 5/5 AC.
+- Code brute force duyệt 2ⁿ subset: 3/5 TLE với n ≥ 20.
 
 ---
 
-## 6. Kiểm thử UI/UX
+## 5. Thử nghiệm AI phân tích đề
 
-| Tính năng | Mô tả | Kết quả |
-|-----------|-------|---------|
-| Alternating row colors | Bảng Result/CodeSubmit/AI có màu xen kẽ | ✅ Dễ đọc hơn |
-| Nút Cập nhật đề thi | Sửa đề đã chọn trong ProblemEntryPanel | ✅ Hoạt động đúng |
-| Xóa kết quả | Xóa toàn bộ submission | ✅ Có xác nhận, hoạt động đúng |
-| Back button | Ẩn ở Dashboard, hiện ở các panel khác | ✅ Không còn NPE |
-| UTF-8 tiếng Việt | Tiêu đề, mô tả đề chứa tiếng Việt | ✅ Lưu/đọc đúng |
+Em thử dùng AI phân tích 2 đề: "Ocean Club" và "Greatest Common Divisor".
 
----
+Kết quả:
+- AI đọc hiểu đề và trả về mô tả ngắn gọn đúng nghĩa.
+- Sinh được 5 testcase gồm small, large, edge.
+- Có thể tick chọn "Tự động sinh code AC" thì AI viết code Java mẫu.
+- Có thể hủy tác vụ AI bằng cách nhấn lại nút, không bị treo UI.
 
-## 7. Các lỗi đã phát hiện và khắc phục
-
-| Lỗi | Mức độ | Nguyên nhân | Cách khắc phục |
-|-----|--------|-------------|----------------|
-| C++ Runtime Error (RE) trên Windows | **Critical** | `ProcessBuilder("solution.exe")` tìm trong PATH, không thấy file | Dùng `workDir.resolve("solution.exe")` → absolute path |
-| Nút Back bị NullPointerException | **Critical** | `JButton backBtn` shadowing field | Gán `this.backBtn = new JButton(...)` |
-| UI treo khi gọi API AI | **High** | Không có timeout OkHttpClient | Thêm connect/write/read timeout 30s |
-| Mất file rác khi xóa đề | **High** | `deleteProblem` chỉ xóa DB, không xóa file ảnh/testcase | Xóa file trước khi xóa DB record |
-| Memory leak SwingWorker | **Medium** | Không cancel worker cũ khi chuyển panel | Lưu worker làm field, gọi `cancel(true)` trước khi tạo mới |
-| Bảng khó đọc | **Low** | Không có phân biệt hàng | Thêm `AlternatingRowRenderer` |
+> **[CHỤP ẢNH]** Màn hình AIPanel sau khi phân tích xong, bảng testcase hiển thị 5 dòng
 
 ---
 
-## 8. Tối ưu hóa đã thực hiện
+## 6. Một số lỗi đã gặp và cách sửa
 
-1. **Judge Engine:** Giới hạn stdout/stderr 10MB tránh OOM.
-2. **MLE Detection:** Dùng `ProcessHandle` + `/proc/{pid}/statm` (Linux/Mac), Windows fallback.
-3. **Charset UTF-8:** Tất cả file read/write đều chỉ định `StandardCharsets.UTF_8`.
-4. **Input Validation:** Giới hạn title length, time/memory limit hợp lệ.
-5. **Resource Cleanup:** Xóa temp directory sau mỗi lần chấm.
-
----
-
-## 9. Kết luận
-
-Hệ thống **AI-Powered CP Judge System** đã vượt qua toàn bộ 20 bài kiểm thử tự động và kiểm thử thủ công với các ngôn ngữ Java, C++, Python. Các lỗi nghiêm trọng (C++ RE, NPE, UI treo) đã được khắc phục. Giao diện người dùng được cải thiện với alternating row colors, cancelable AI tasks, và các nút chức năng đầy đủ.
-
-**Đánh giá tổng quan:** ✅ **Đạt yêu cầu**, sẵn sàng demo và nộp bài.
+| STT | Lỗi gặp phải | Cách sửa |
+|-----|-------------|----------|
+| 1 | C++ chạy bị RE trên Windows | `ProcessBuilder("solution.exe")` tìm trong PATH → sửa thành `workDir.resolve("solution.exe")` |
+| 2 | Nút Back ở Dashboard bị NullPointerException | Do khai báo `JButton backBtn` thành biến cục bộ → sửa thành gán vào field của class |
+| 3 | UI treo khi gọi API AI | Thêm timeout cho OkHttpClient (30s) |
+| 4 | Xóa đề thì file ảnh/testcase còn sót lại | Trong `deleteProblem`, thêm xóa file trước khi xóa record DB |
+| 5 | Bảng kết quả khó nhìn | Thêm màu nền xen kẽ giữa các hàng |
 
 ---
 
-*Report generated on 2026-05-12*
+## 7. Kết luận
+
+Sau quá trình thử nghiệm, chương trình chạy ổn định với các chức năng chính:
+- Nhập đề và lưu vào CSDL: hoạt động tốt.
+- AI phân tích đề và sinh testcase: hoạt động tốt, cần chỉnh prompt với đề phức tạp.
+- Chấm thử Java/C++/Python: chạy đúng, phát hiện AC/WA/TLE chính xác.
+- UI hiển thị rõ ràng, có màu phân biệt status.
+
+SystemTest đạt 20/20 passed. Em đánh giá chương trình đã đáp ứng được yêu cầu đề bài.
+
+> **[CHỤP ẢNH]** Màn hình Dashboard hiển thị tổng quan (6 đề, các testcase, submission)
+
+---
+
+*Các ảnh chụp màn hình minh họa được đính kèm trong thư mục `screenshots/` (nếu có).*
