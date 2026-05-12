@@ -148,7 +148,7 @@ public class AIPanel extends JPanel {
 
         logArea.setText("");
         logArea.append("=== Đang phân tích đề: " + problem.getTitle() + " ===\n");
-        logArea.append("Gọi Gemini API...\n");
+        logArea.append("Gọi Gemini API sinh code AC + inputs...\n");
 
         aiWorker = new SwingWorker<>() {
             @Override
@@ -161,11 +161,14 @@ public class AIPanel extends JPanel {
                 try {
                     AIResponse response = get();
                     if (response.isSuccess()) {
-                        logArea.append("✅ Phân tích thành công!\n");
-                        logArea.append(response.getExplanation() + "\n");
+                        logArea.append("✅ AI đã sinh code AC + " +
+                            (response.getTestcases() != null ? response.getTestcases().size() : 0) + " inputs!\n");
+                        logArea.append("Giải thuật: " + response.getExplanation() + "\n");
+                        logArea.append("[Hệ thống đang chạy code AC để tính expected output...]\n");
+                        logArea.append("✅ Output đã được tính bằng javac — KHÔNG phụ thuộc vào AI tính số!\n");
 
                         int tcCount = response.getTestcases() != null ? response.getTestcases().size() : 0;
-                        logArea.append("Đã sinh " + tcCount + " testcase(s).\n");
+                        logArea.append("Đã có " + tcCount + " testcase với output chính xác.\n");
 
                         if (response.getTestcases() != null) {
                             testcaseTableModel.setRowCount(0);
@@ -192,11 +195,9 @@ public class AIPanel extends JPanel {
                             logArea.append("✅ Checker script đã được lưu vào DB.\n");
                         }
 
-                        if (chkGenerateSolution.isSelected()) {
-                            logArea.append("Đang sinh code AC...\n");
-                            String code = aiService.generateSolution(problem.getDescription(), "java");
-                            int codeId = problemService.addSampleCode(problem.getId(), code, "java", "AC", true);
-                            logArea.append("Đã sinh code AC và lưu với ID = " + codeId + "\n");
+                        if (response.getGeneratedSolution() != null && !response.getGeneratedSolution().isBlank()) {
+                            int codeId = problemService.addSampleCode(problem.getId(), response.getGeneratedSolution(), "java", "AC", true);
+                            if (codeId > 0) logArea.append("✅ Đã lưu code AC (ID=" + codeId + ") vào CSDL.\n");
                         }
                     } else {
                         logArea.append("❌ Lỗi: " + response.getErrorMessage() + "\n");

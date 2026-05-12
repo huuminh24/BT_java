@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.java.model.AIResponse;
+import com.java.model.JudgeResult;
 import com.java.model.Problem;
 import com.java.model.Testcase;
 import okhttp3.*;
@@ -63,25 +64,73 @@ public class GeminiAIService implements AIService {
         }
 
         try {
+            // Bước 1: Gọi AI — chỉ lấy inputs + code AC, KHÔNG lấy output
             String prompt = buildAnalyzePrompt(problem);
             String jsonResponse = callGeminiAPI(prompt, problem.getImagePath());
-            response = parseAnalyzeResponse(jsonResponse);
-        } catch (Exception e) {
-            // Retry once with truncated continuation prompt
-            try {
-                String retryPrompt = "Bạn vừa bị cắt JSON giữa chừng. Hãy hoàn thành JSON bị cắt với cùng cấu trúc. "
-                    + "Chỉ trả về phần còn thiếu của JSON (testcases, checker_needed, checker_script). "
-                    + "Không giải thích, chỉ trả về JSON.";
-                String jsonResponse = callGeminiAPI(retryPrompt, null);
-                AIResponse retryResponse = parseAnalyzeResponse(jsonResponse);
-                if (retryResponse.isSuccess()) {
-                    return retryResponse;
+            String text = extractTextFromResponse(jsonResponse);
+
+            // Bước 2: Parse JSON lấy inputs và ac_solution
+            String jsonBlock = extractJsonBlock(text);
+            JsonObject obj = gson.fromJson(jsonBlock, JsonObject.class);
+
+            JsonElement expEl = obj.get("explanation");
+            response.setExplanation(expEl != null && !expEl.isJsonNull() ? expEl.getAsString() : "");
+
+            JsonElement solEl = obj.get("ac_solution");
+            String acCode = (solEl != null && !solEl.isJsonNull()) ? solEl.getAsString() : "";
+            response.setGeneratedSolution(acCode);
+
+            // Bước 3: Chạy code AC để tính output chính xác cho từng input
+            List<Testcase> testcases = new ArrayList<>();
+            if (obj.has("inputs") && obj.get("inputs").isJsonArray()) {
+                JudgeEngine engine = new JudgeEngine();
+                JsonArray inputArray = obj.getAsJsonArray("inputs");
+                for (JsonElement e : inputArray) {
+                    JsonObject tcObj = e.getAsJsonObject();
+                    String input = tcObj.has("input") ? tcObj.get("input").getAsString() : "";
+                    String type  = tcObj.has("type")  ? tcObj.get("type").getAsString()  : "normal";
+                    if (input.isBlank()) continue;
+
+                    if (acCode.isBlank()) {
+                        // Không có code AC → không thể tính output
+                        response.setSuccess(false);
+                        response.setErrorMessage("AI không sinh được code AC để tính output. Thử lại.");
+                        return response;
+                    }
+
+                    // Chạy code AC với input này
+                    JudgeResult jr = engine.judge(acCode, "java", input, "", 10000, 256);
+                    if ("CE".equals(jr.getStatus())) {
+                        response.setSuccess(false);
+                        response.setErrorMessage("Code AC bị lỗi biên dịch (CE):\n" + jr.getErrorMessage()
+                            + "\nHãy thử lại để AI sinh code AC khác.");
+                        return response;
+                    }
+                    if ("RE".equals(jr.getStatus()) || "TLE".equals(jr.getStatus())
+                            || jr.getActualOutput() == null || jr.getActualOutput().isBlank()) {
+                        continue;
+                    }
+
+                    Testcase tc = new Testcase();
+                    tc.setInputData(input);
+                    tc.setExpectedOutput(jr.getActualOutput().trim());
+                    tc.setTestcaseType(type);
+                    tc.setAiGenerated(true);
+                    testcases.add(tc);
                 }
-            } catch (Exception retryEx) {
-                // ignore retry error, use original error
             }
+
+            if (testcases.isEmpty()) {
+                response.setSuccess(false);
+                response.setErrorMessage("Không tạo được testcase nào. Kiểm tra lại đề bài và thử lại.");
+                return response;
+            }
+
+            response.setTestcases(testcases);
+            response.setSuccess(true);
+        } catch (Exception e) {
             response.setSuccess(false);
-            response.setErrorMessage(e.getMessage());
+            response.setErrorMessage("Lỗi: " + e.getMessage());
         }
         return response;
     }
@@ -110,23 +159,18 @@ public class GeminiAIService implements AIService {
 
     private String buildAnalyzePrompt(Problem problem) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Bạn là chuyên gia lập trình thi đấu (competitive programming). Nhiệm vụ của bạn là:\n");
-        sb.append("1. Phân tích đề bài kỹ lưỡng, xác định CHÍNH XÁC thuật toán và công thức.\n");
-        sb.append("2. Sinh 5 testcase đa dạng VÀ TỰ KIỂM TRA output bằng cách chạy thuật toán tay từng bước.\n");
-        sb.append("3. Chỉ đưa ra output sau khi đã xác nhận kết quả là đúng.\n\n");
-        sb.append("QUY TẮC BẮT BUỘC:\n");
-        sb.append("- Output phải là KẾT QUẢ CHÍNH XÁC của bài toán, không phải ước lượng.\n");
-        sb.append("- Với mỗi testcase, hãy trace thuật toán từng bước để xác nhận output.\n");
-        sb.append("- Edge cases: n=1, tất cả âm, tất cả bằng nhau, số rất lớn/rất nhỏ.\n");
-        sb.append("- Input và output phải đúng format: KHÔNG có khoảng trắng thừa cuối dòng.\n\n");
-        sb.append("Trả về JSON theo đúng cấu trúc sau (KHÔNG thêm text ngoài JSON):\n");
+        sb.append("Bạn là chuyên gia lp trình thi đấu. Hãy thực hiện 2 việc:\n");
+        sb.append("1. Viết CODE JAVA giải đúng hoàn toàn bài toán (chỉ dùng java.util.Scanner, không import khác).\n");
+        sb.append("2. Sinh 5 INPUT đa dạng: small, large, edge cases (n=1, tất cả âm, tất cả bằng nhau).\n\n");
+        sb.append("QUY TẮc: Chỉ trả về JSON, KHÔNG thêm text ngoài JSON, KHÔNG có markdown code block.\n\n");
         sb.append("{\n");
-        sb.append("  \"explanation\": \"Mô tả thuật toán và công thức giải\",\n");
-        sb.append("  \"testcases\": [\n");
-        sb.append("    {\"type\": \"small|large|edge|normal\", \"input\": \"...\", \"output\": \"...\", \"trace\": \"giải thích tại sao output này đúng\"}\n");
-        sb.append("  ],\n");
-        sb.append("  \"checker_needed\": false,\n");
-        sb.append("  \"checker_script\": null\n");
+        sb.append("  \"explanation\": \"Mô tả ngắn thuật toán\",\n");
+        sb.append("  \"ac_solution\": \"import java.util.Scanner;\\npublic class Main { ... }\",\n");
+        sb.append("  \"inputs\": [\n");
+        sb.append("    {\"type\": \"small\", \"input\": \"dữ liệu input thực tế\"},\n");
+        sb.append("    {\"type\": \"edge\",  \"input\": \"...\"},\n");
+        sb.append("    {\"type\": \"large\", \"input\": \"...\"}\n");
+        sb.append("  ]\n");
         sb.append("}\n\n");
         sb.append("ĐỀ THI:\n");
         sb.append("Tiêu đề: ").append(problem.getTitle()).append("\n");
@@ -137,6 +181,15 @@ public class GeminiAIService implements AIService {
         sb.append("Giới hạn thời gian: ").append(problem.getTimeLimit()).append("ms\n");
         sb.append("Giới hạn bộ nhớ: ").append(problem.getMemoryLimit()).append("MB\n");
         return sb.toString();
+    }
+
+    private String extractJsonBlock(String text) {
+        int start = text.indexOf("{");
+        int end = text.lastIndexOf("}");
+        if (start != -1 && end != -1 && end > start) {
+            return text.substring(start, end + 1);
+        }
+        return text;
     }
 
     private String callGeminiAPI(String textPrompt, String imagePath) throws IOException {
@@ -239,44 +292,4 @@ public class GeminiAIService implements AIService {
         }
     }
 
-    private AIResponse parseAnalyzeResponse(String jsonResponse) {
-        AIResponse result = new AIResponse();
-        String text = extractTextFromResponse(jsonResponse);
-
-        // Try to extract JSON block from markdown
-        String jsonBlock = text;
-        int start = text.indexOf("{");
-        int end = text.lastIndexOf("}");
-        if (start != -1 && end != -1 && end > start) {
-            jsonBlock = text.substring(start, end + 1);
-        }
-
-        try {
-            JsonObject obj = gson.fromJson(jsonBlock, JsonObject.class);
-            JsonElement expEl = obj.get("explanation");
-            result.setExplanation(expEl != null && !expEl.isJsonNull() ? expEl.getAsString() : "");
-            JsonElement chkEl = obj.get("checker_script");
-            result.setGeneratedChecker(chkEl != null && !chkEl.isJsonNull() ? chkEl.getAsString() : "");
-
-            List<Testcase> testcases = new ArrayList<>();
-            if (obj.has("testcases") && obj.get("testcases").isJsonArray()) {
-                JsonArray tcArray = obj.getAsJsonArray("testcases");
-                for (JsonElement e : tcArray) {
-                    JsonObject tcObj = e.getAsJsonObject();
-                    Testcase tc = new Testcase();
-                    tc.setInputData(tcObj.has("input") ? tcObj.get("input").getAsString() : "");
-                    tc.setExpectedOutput(tcObj.has("output") ? tcObj.get("output").getAsString() : "");
-                    tc.setTestcaseType(tcObj.has("type") ? tcObj.get("type").getAsString() : "normal");
-                    tc.setAiGenerated(true);
-                    testcases.add(tc);
-                }
-            }
-            result.setTestcases(testcases);
-            result.setSuccess(true);
-        } catch (Exception e) {
-            result.setSuccess(false);
-            result.setErrorMessage("Lỗi parse AI response: " + e.getMessage() + "\nRaw: " + text);
-        }
-        return result;
-    }
 }
