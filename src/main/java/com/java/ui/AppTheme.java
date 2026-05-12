@@ -25,13 +25,13 @@ public final class AppTheme {
     public static final Color TEXT_MUTED     = new Color(0x64, 0x71, 0x7A); // #64717A
 
     // ===== FONTS (Larger, readable) =====
-    public static final Font FONT_TITLE   = new Font("Segoe UI", Font.BOLD, 32);
-    public static final Font FONT_HEADING = new Font("Segoe UI", Font.BOLD, 22);
-    public static final Font FONT_SUBHEAD = new Font("Segoe UI", Font.BOLD, 16);
-    public static final Font FONT_BODY    = new Font("Segoe UI", Font.PLAIN, 15);
+    public static final Font FONT_TITLE   = new Font("Segoe UI Emoji", Font.BOLD, 32);
+    public static final Font FONT_HEADING = new Font("Segoe UI Emoji", Font.BOLD, 22);
+    public static final Font FONT_SUBHEAD = new Font("Segoe UI Emoji", Font.BOLD, 16);
+    public static final Font FONT_BODY    = new Font("Segoe UI Emoji", Font.PLAIN, 15);
     public static final Font FONT_CODE    = new Font("JetBrains Mono", Font.PLAIN, 14);
-    public static final Font FONT_SMALL   = new Font("Segoe UI", Font.PLAIN, 13);
-    public static final Font FONT_BUTTON  = new Font("Segoe UI", Font.BOLD, 15);
+    public static final Font FONT_SMALL   = new Font("Segoe UI Emoji", Font.PLAIN, 13);
+    public static final Font FONT_BUTTON  = new Font("Segoe UI Emoji", Font.BOLD, 15);
 
     // ===== BORDERS =====
     public static final Border BORDER_CARD = new LineBorder(new Color(0x33, 0x44, 0x55), 1, true);

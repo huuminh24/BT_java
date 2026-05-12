@@ -182,7 +182,7 @@ public class DashboardPanel extends JPanel {
                         "2. AI Phân tích: Vào 'AI Phân tích' → Chọn đề → Nhấn 'Phân tích' → AI sẽ sinh testcase & code\n" +
                         "3. Nộp code: Vào 'Nộp code mẫu' → Chọn đề → Dán code → Chấm thử\n" +
                         "4. Xem kết quả: Vào 'Kết quả chấm' → Tải kết quả\n\n" +
-                        "Lưu ý: Cần cấu hình API Key Gemini trong config.properties để dùng AI",
+                        "Lưu ý: Cần cấu hình API Key trong config.properties (ai.api.key) để dùng AI",
                         "Hướng dẫn sử dụng", JOptionPane.INFORMATION_MESSAGE);
                 }
                 else mainFrame.showPanel(action);

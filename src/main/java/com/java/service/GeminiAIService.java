@@ -28,17 +28,21 @@ public class GeminiAIService implements AIService {
             .build();
     private static final Gson gson = new Gson();
 
+    private static final String API_MODEL;
+
     static {
         Properties props = new Properties();
         String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
         String key = "";
         String format = "gemini";
+        String model = "gemini-2.5-flash";
         try (var input = GeminiAIService.class.getClassLoader().getResourceAsStream("config.properties")) {
             if (input != null) {
                 props.load(input);
                 url = props.getProperty("ai.api.url", url);
                 key = props.getProperty("ai.api.key", "");
                 format = props.getProperty("ai.format", "gemini");
+                model = props.getProperty("ai.model", model);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -46,6 +50,7 @@ public class GeminiAIService implements AIService {
         API_URL_TEMPLATE = url;
         API_KEY = key;
         API_FORMAT = format;
+        API_MODEL = model;
     }
 
     @Override
@@ -53,7 +58,7 @@ public class GeminiAIService implements AIService {
         AIResponse response = new AIResponse();
         if (API_KEY == null || API_KEY.isBlank() || API_KEY.contains("YOUR")) {
             response.setSuccess(false);
-            response.setErrorMessage("Chưa cấu hình API Key Gemini trong config.properties");
+            response.setErrorMessage("Chưa cấu hình API Key trong config.properties (ai.api.key)");
             return response;
         }
 
@@ -140,7 +145,7 @@ public class GeminiAIService implements AIService {
             message.addProperty("content", textPrompt);
             messages.add(message);
             requestBody.add("messages", messages);
-            requestBody.addProperty("model", System.getProperty("ai.model", "gpt-4o-mini"));
+            requestBody.addProperty("model", API_MODEL);
             requestBody.addProperty("temperature", 0.2);
             requestBody.addProperty("max_tokens", 32768);
         } else {
