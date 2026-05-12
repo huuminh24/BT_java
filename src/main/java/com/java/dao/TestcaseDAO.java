@@ -93,7 +93,21 @@ public class TestcaseDAO {
         }
     }
 
-    // 5. Xóa tất cả testcase của một bài
+    // 5. Cập nhật expected output
+    public boolean updateExpectedOutput(int id, String newOutput) {
+        String sql = "UPDATE Testcases SET expected_output = ? WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, newOutput);
+            ps.setInt(2, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // 6. Xóa tất cả testcase của một bài
     public int deleteAllByProblemId(int problemId) {
         String sql = "DELETE FROM Testcases WHERE problem_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();

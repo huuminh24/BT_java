@@ -86,6 +86,38 @@ public class ProblemService {
         return testcaseDAO.deleteAllByProblemId(problemId);
     }
 
+    /**
+     * Chạy code AC với từng testcase input, lấy actual output làm expected output mới.
+     * Trả về số testcase đã cập nhật thành công.
+     */
+    public int recomputeExpectedOutputs(int problemId, String acCode, String language, JudgeService judgeService) {
+        List<Testcase> testcases = testcaseDAO.getTestcasesByProblemId(problemId);
+        if (testcases.isEmpty()) return 0;
+
+        JudgeEngine engine = new JudgeEngine();
+        int updated = 0;
+        for (Testcase tc : testcases) {
+            try {
+                JudgeResult result = engine.judge(acCode, language, tc.getInputData(), "", 5000, 256);
+                if (result.getActualOutput() != null && !result.getActualOutput().isBlank()
+                        && !"RE".equals(result.getStatus()) && !"CE".equals(result.getStatus())
+                        && !"TLE".equals(result.getStatus())) {
+                    String newOutput = result.getActualOutput().trim();
+                    boolean ok = testcaseDAO.updateExpectedOutput(tc.getId(), newOutput);
+                    if (ok) {
+                        try {
+                            FileManager.saveTestcaseOutput(problemId, tc.getId(), newOutput);
+                        } catch (IOException ignored) {}
+                        updated++;
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return updated;
+    }
+
     public int deleteAiTestcasesForProblem(int problemId) {
         return testcaseDAO.deleteAiGeneratedByProblemId(problemId);
     }

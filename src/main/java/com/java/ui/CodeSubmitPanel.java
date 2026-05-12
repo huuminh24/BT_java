@@ -59,9 +59,11 @@ public class CodeSubmitPanel extends JPanel {
         topPanel.add(languageCombo, gbc);
 
         gbc.gridx = 0; gbc.gridy = 2;
-        topPanel.add(new JLabel("Kết quả mong đợi:"), gbc);
+        topPanel.add(new JLabel("Loại code:"), gbc);
         gbc.gridx = 1;
-        expectedTypeCombo = new JComboBox<>(new String[]{"AC", "WA", "TLE", "RE"});
+        expectedTypeCombo = new JComboBox<>(new String[]{"AC - Code tham khảo đúng"});
+        expectedTypeCombo.setEnabled(false);
+        expectedTypeCombo.setToolTipText("Chỉ lưu code AC làm reference để tính expected output");
         topPanel.add(expectedTypeCombo, gbc);
 
         gbc.gridx = 2; gbc.gridy = 2;
@@ -113,10 +115,14 @@ public class CodeSubmitPanel extends JPanel {
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         JButton btnSave = AppTheme.createAccentButton("💾 Lưu code mẫu", AppTheme.ACCENT_GREEN);
         JButton btnJudge = AppTheme.createAccentButton("⚖️ Chấm thử", AppTheme.ACCENT_CYAN);
+        JButton btnSetAC = AppTheme.createAccentButton("📐 Tạo Expected Output từ code này", AppTheme.ACCENT_PURPLE);
+        btnSetAC.setToolTipText("Chạy code hiện tại với từng testcase input, lấy kết quả làm expected output mới (chỉ dùng khi code này đúúng)");
         btnSave.addActionListener(e -> saveCode());
         btnJudge.addActionListener(e -> runJudge());
+        btnSetAC.addActionListener(e -> recomputeExpected());
         btnPanel.add(btnSave);
         btnPanel.add(btnJudge);
+        btnPanel.add(btnSetAC);
         add(btnPanel, BorderLayout.SOUTH);
 
         refreshProblems();
@@ -210,7 +216,7 @@ public class CodeSubmitPanel extends JPanel {
         statusLabel.setForeground(AppTheme.ACCENT_YELLOW);
 
         String language = (String) languageCombo.getSelectedItem();
-        String expectedType = (String) expectedTypeCombo.getSelectedItem();
+        String expectedType = "AC";
 
         judgeWorker = new SwingWorker<>() {
             int tempCodeId = -1;
@@ -275,6 +281,48 @@ public class CodeSubmitPanel extends JPanel {
             }
         };
         judgeWorker.execute();
+    }
+
+    private void recomputeExpected() {
+        ProblemComboItem selected = (ProblemComboItem) problemCombo.getSelectedItem();
+        if (selected == null) return;
+        String code = codeArea.getText().trim();
+        if (code.isEmpty()) { JOptionPane.showMessageDialog(this, "Dán code vào trước!"); return; }
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Chạy code này với tất cả testcase input của đề [" + selected.title + "],\n" +
+            "và ghi đè expected output bằng kết quả thực tế?\n\n" +
+            "CHỈ DÙNG KHI CODE NÀY LÀ CODE AC CHÍNH XÁC!",
+            "Xác nhận tạo Expected Output",
+            JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        statusLabel.setText("⏳ Đang tính lại expected output...");
+        statusLabel.setForeground(AppTheme.ACCENT_YELLOW);
+
+        String language = (String) languageCombo.getSelectedItem();
+        String code2 = code;
+        new SwingWorker<Integer, Void>() {
+            @Override
+            protected Integer doInBackground() {
+                return problemService.recomputeExpectedOutputs(
+                    selected.id, code2, language, new DefaultJudgeService());
+            }
+            @Override
+            protected void done() {
+                try {
+                    int count = get();
+                    statusLabel.setText("✅ Đã cập nhật expected output cho " + count + " testcase.");
+                    statusLabel.setForeground(AppTheme.ACCENT_GREEN);
+                    JOptionPane.showMessageDialog(CodeSubmitPanel.this,
+                        "✅ Đã cập nhật " + count + " testcase!\nGiờ chấm lại sẽ cho kết quả chính xác.",
+                        "Hoàn tất", JOptionPane.INFORMATION_MESSAGE);
+                } catch (Exception ex) {
+                    statusLabel.setText("❌ Lỗi: " + ex.getMessage());
+                    statusLabel.setForeground(AppTheme.ACCENT_RED);
+                }
+            }
+        }.execute();
     }
 
     private String shorten(String s, int maxLen) {
